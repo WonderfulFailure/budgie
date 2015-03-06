@@ -1,0 +1,1 @@
+Add your `global.json` config file here.
