@@ -8,8 +8,8 @@ Parse.Cloud.define("home", function(request, response) {
   response.success();
 });
 
-Parse.Cloud.define("budget", function(request, response) {
-  response.success();
+Parse.Cloud.define("budgetto", function(request, response) {
+
 });
 
 Parse.Cloud.define("goal", function(request, response) {
