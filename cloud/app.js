@@ -79,6 +79,95 @@ app.get('/settings', function(req, res) {
   res.render('settings');
 });
 
+app.post('/spend-save', function(req, res) {
+    var User = Parse.Object.extend('_User');
+    var query = new Parse.Query(User);
+    var userObj;
+    var userTransactions;
+    query.get('ivWt4BYMS0', {
+        success: function(user) {
+            userObj = user;
+        },
+
+        error: function(object, error) {
+            // Error yo
+            console.log(error);
+        }
+
+    })
+    .then(function() {
+        var amount = req.body.amount;
+        var amountInCents = amount * 100;
+        var Transaction = Parse.Object.extend("Transactions");
+        var cashTrans = new Transaction();
+        cashTrans.save({
+            label: 'Cash Purchase',
+            amount: amountInCents,
+            owner: userObj
+        }, {
+            success: function(savedTransaction) {
+                res.send("0");
+            },
+            error: function(erroredTransaction, error) {
+                res.send("-1");
+            }
+        })
+    })
+});
+
+app.post('/spend-save-sms', function(req, res) {
+    console.log(req.body);
+    var User = Parse.Object.extend('_User');
+    var query = new Parse.Query(User);
+    var userObj;
+    var userTransactions;
+    query.get('ivWt4BYMS0', {
+        success: function(user) {
+            userObj = user;
+        },
+
+        error: function(object, error) {
+            // Error yo
+            console.log(error);
+        }
+
+    })
+    .then(function() {
+        var amount = req.body.text;
+        var amountInCents = amount * 100;
+        var Transaction = Parse.Object.extend("Transactions");
+        var cashTrans = new Transaction();
+        return cashTrans.save({
+            label: 'Cash Purchase',
+            amount: amountInCents,
+            owner: userObj
+        }, {
+            success: function(savedTransaction) {
+                Parse.Cloud.httpRequest({
+                  method: "POST",
+                  url: "https://rest.nexmo.com/sms/json",
+                  body: {
+                     api_key: 'b2d131d2',
+                     api_secret: '7b5388b8',
+                     from: req.body.to,
+                     to: req.body.msidn,
+                     text: "Cash Transaction for $" + amount + " has been recorded.  Bwwraaaak!"
+                  },
+                  success: function(httpResponse) {
+                    console.log(httpResponse.text);
+                  },
+                  error: function(httpResponse) {
+                    console.error('Request failed with response code ' + httpResponse.status);
+                  }
+                });
+            },
+            error: function(erroredTransaction, error) {
+                console.log('Failed to send text to recipient');
+            }
+        })
+    });
+});
+
 // // Example reading from the request query string of an HTTP get request.
 // app.get('/test', function(req, res) {
 //   // GET http://example.parseapp.com/test?message=hello
