@@ -14,13 +14,17 @@ var app = angular.module('budgie', [
         })
         .when('/buckets', {
             templateUrl: '/buckets',
-            controller: 'BucketController'
+            controller: 'BucketsController'
         })
         .when('/daily', {
             templateUrl: '/daily',
+            controller: 'DailyController'
+
         })
         .when('/goal', {
             templateUrl: '/goal',
+            controller: 'GoalController'
+
         })
         .when('/settings', {
             templateUrl: '/settings',
@@ -49,13 +53,20 @@ var app = angular.module('budgie', [
 })
 
 .controller('SettingsController', function($scope, $routeParams) {
-    $scope.clickme = function(event) {
-        event.preventDefault();
-        console.log('You clicked me');
-    }
+    $scope.pageClass = 'page-settings';
 })
 
-.controller('BucketController', function($scope, $routeParams) {
+.controller('GoalController', function($scope, $routeParams) {
+    $scope.pageClass = 'page-goal';
+})
+
+.controller('DailyController', function($scope, $routeParams) {
+    $scope.pageClass = 'page-daily';
+})
+
+.controller('BucketsController', function($scope, $routeParams) {
     $scope.pageClass = 'page-buckets';
 });
+
+
 
