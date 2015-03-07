@@ -1,7 +1,8 @@
 'use strict';
 
 var app = angular.module('budgie', [
-  'ngRoute'
+  'ngRoute',
+  'ngAnimate'
 ])
 
 .config(['$routeProvider', '$httpProvider', '$locationProvider', function($routeProvider, $httpProvider, $locationProvider) {
@@ -13,6 +14,7 @@ var app = angular.module('budgie', [
         })
         .when('/buckets', {
             templateUrl: '/buckets',
+            controller: 'BucketController'
         })
         .when('/daily', {
             templateUrl: '/daily',
@@ -29,6 +31,7 @@ var app = angular.module('budgie', [
 
 .controller('BudgetController', function($scope, $routeParams) {
     $scope.amountCents = "";
+    $scope.pageClass = 'page-budget';
     $scope.updateDollars = function(event) {
         var num = event.which || event.keyCode;
         if(num > 47 && num < 58) {
@@ -51,4 +54,8 @@ var app = angular.module('budgie', [
         console.log('You clicked me');
     }
 })
+
+.controller('BucketController', function($scope, $routeParams) {
+    $scope.pageClass = 'page-buckets';
+});
 
