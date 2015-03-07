@@ -66,6 +66,14 @@ app.get('/goal', function(req, res) {
   res.render('goal');
 });
 
+app.get('/spend', function(req, res) {
+  res.render('spend');
+});
+
+app.get('/save', function(req, res) {
+  res.render('save');
+});
+
 app.get('/settings', function(req, res) {
   res.render('settings');
 });
