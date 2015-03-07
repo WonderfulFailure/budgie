@@ -164,7 +164,7 @@ function radialProgress(parent) {
 
         return function(t) {
             _currentValue = i(t);
-            this.textContent = "$" + parseFloat(Math.round(i(t)) / 10).toFixed(2);
+            this.textContent = "$" + parseFloat((i(t)) / 10).toFixed(2);
         }
     }
 

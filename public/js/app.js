@@ -44,22 +44,7 @@ var app = angular.module('budgie', [
 }])
 
 .controller('BudgetController', function($scope, $routeParams) {
-    $scope.amountCents = "";
     $scope.pageClass = 'page-budget';
-    $scope.updateDollars = function(event) {
-        var num = event.which || event.keyCode;
-        if(num > 47 && num < 58) {
-            $scope.amountCents = $scope.amountCents.concat(String.fromCharCode(num));
-        }
-        else if(num == 8) {
-            $scope.amountCents = $scope.amountCents.substring(0, $scope.amountCents.length - 1);
-        }
-
-        var amount = parseFloat($scope.amountCents / 100).toFixed(2);
-        if(String(amount).length <= 4)
-            amount = 0 + String(amount);
-        $scope.amount = amount;
-    }
 })
 
 .controller('SettingsController', function($scope, $routeParams) {
@@ -79,8 +64,45 @@ var app = angular.module('budgie', [
     $scope.pageClass = 'page-save';
 })
 
-.controller('SpendController', function($scope, $routeParams) {
+.controller('SpendController', function($scope, $routeParams, $http, $location, $window) {
     $scope.pageClass = 'page-spend';
+
+    $scope.amountCents = "";
+    $scope.updateDollars = function(event) {
+        var num = event.which || event.keyCode;
+        if(num > 47 && num < 58) {
+            $scope.amountCents = $scope.amountCents.concat(String.fromCharCode(num));
+        }
+        else if(num == 8) {
+            $scope.amountCents = $scope.amountCents.substring(0, $scope.amountCents.length - 1);
+        }
+
+        var amount = parseFloat($scope.amountCents / 100).toFixed(2);
+        if(String(amount).length <= 4)
+            amount = 0 + String(amount);
+        $scope.amount = amount;
+    }
+
+    $scope.processForm = function() {
+        $http({
+          method  : 'POST',
+          url     : '/spend-save',
+          data    : 'amount=' + $scope.amount,  // pass in data as strings
+          headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
+        })
+      .success(function(data) {
+        console.log(data);
+
+        if (data != 0) {
+          // if not successful, bind errors to error variables
+          console.log('something went wrong');
+        } else {
+          // if successful, bind success message to message
+          $scope.$apply();
+          $location.path('/daily');
+        }
+      });
+    }
 })
 
 .controller('BucketsController', function($scope, $routeParams) {
@@ -235,7 +257,7 @@ angular.module( 'budgie').directive( 'd3Radial', [
 
         return function(t) {
             _currentValue = i(t);
-            this.textContent = "$" + parseFloat(Math.round(i(t)) / 10).toFixed(2);
+            this.textContent = "$" + parseFloat(i / 10).toFixed(2);
         }
     }
 
