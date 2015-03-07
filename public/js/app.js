@@ -26,6 +26,16 @@ var app = angular.module('budgie', [
             controller: 'GoalController'
 
         })
+        .when('/spend', {
+            templateUrl: '/spend',
+            controller: 'SpendController'
+
+        })
+        .when('/save', {
+            templateUrl: '/save',
+            controller: 'SaveController'
+
+        })
         .when('/settings', {
             templateUrl: '/settings',
             controller: 'SettingsController'
@@ -62,6 +72,14 @@ var app = angular.module('budgie', [
 
 .controller('DailyController', function($scope, $routeParams) {
     $scope.pageClass = 'page-daily';
+})
+
+.controller('SaveController', function($scope, $routeParams) {
+    $scope.pageClass = 'page-save';
+})
+
+.controller('SpendController', function($scope, $routeParams) {
+    $scope.pageClass = 'page-spend';
 })
 
 .controller('BucketsController', function($scope, $routeParams) {
