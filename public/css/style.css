@@ -5,6 +5,7 @@
     text-align:center;
     top:0;
     width:100%;
+    background-color:#fff;
 }
 
 /* Transitions */
@@ -28,5 +29,54 @@
     to      { transform: translateX(0); }
 }
 
+/* slide up from bottom */
+
+@-webkit-keyframes slideUp {
+    from    { -webkit-transform: translateY(100%); }
+    to      { -webkit-transform: translateY(0); }
+}
+@keyframes slideUp {
+    from    { transform: translateY(100%); }
+    to      { transform: translateY(0); }
+}
+
+/* slide down from bottom */
+
+@-webkit-keyframes slideDown {
+    from    { -webkit-transform: translateY(0); }
+    to      { -webkit-transform: translateY(100%); }
+}
+@keyframes slideDown {
+    from    { transform: translateY(0%); }
+    to      { transform: translateY(100%); }
+}
+
+/*don't move at all */
+
+@-webkit-keyframes stayPut {
+    from    { -webkit-transform: translateY(0); }
+    to      { -webkit-transform: translateY(0); }
+}
+@keyframes stayPut {
+    from    { transform: translateY(0); }
+    to      { transform: translateY(0); }
+}
+
+
+.page-spend.ng-enter { -webkit-animation: slideUp 0.5s both ease-in; z-index: 9999;}
+.page-spend.ng-leave { -webkit-animation: slideDown 0.5s both ease-in; z-index: 9999;}
+
+.page-save.ng-enter { -webkit-animation: slideUp 0.5s both ease-in; z-index: 9999;}
+.page-save.ng-leave { -webkit-animation: slideDown 0.5s both ease-in; z-index: 9999;}
+
+.page-buckets.ng-enter { -webkit-animation: none!important; z-index: 7777;}
+.page-buckets.ng-leave { -webkit-animation: stayPut 0.5s both ease-in; z-index: 7777;}
+
+.page-daily.ng-enter { -webkit-animation: none!important; z-index: 7777;}
+.page-daily.ng-leave { -webkit-animation: stayPut 0.5s both ease-in; z-index: 7777;}
+
+
+
+/*
 .ng-enter { -webkit-animation: slideInRight 0.5s both ease-in; z-index: 8888; animation: slideInRight 0.5s both ease-in; z-index: 8888; }
-.ng-leave { -webkit-animation: slideOutLeft 0.5s both ease-in; z-index: 9999; animation: slideOutLeft 0.5s both ease-in; z-index: 9999; }
+.ng-leave { -webkit-animation: slideOutLeft 0.5s both ease-in; z-index: 9999; animation: slideOutLeft 0.5s both ease-in; z-index: 9999; }*/
