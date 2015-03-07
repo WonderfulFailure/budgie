@@ -2,3 +2,5 @@
 *.sublime-workspace
 
 config/global.json
+
+.DS_Store

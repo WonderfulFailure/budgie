@@ -1,6 +1,29 @@
 require('cloud/app.js');
-// Use Parse.Cloud.define to define as many cloud functions as you want.
-// For example:
-Parse.Cloud.define("hello", function(request, response) {
-  response.success("Hello world!");
+
+Parse.Cloud.define("index", function(request, response) {
+  response.success();
+});
+
+Parse.Cloud.define("home", function(request, response) {
+  response.success();
+});
+
+Parse.Cloud.define("budget", function(request, response) {
+  response.success();
+});
+
+Parse.Cloud.define("goal", function(request, response) {
+  response.success();
+});
+
+Parse.Cloud.define("daily", function(request, response) {
+  response.success();
+});
+
+Parse.Cloud.define("settings", function(request, response) {
+  response.success();
+});
+
+Parse.Cloud.define("buckets", function(request, response) {
+  response.success();
 });

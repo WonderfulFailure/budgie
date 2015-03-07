@@ -10,8 +10,33 @@ app.use(express.bodyParser());    // Middleware for reading request body
 
 // This is an example of hooking up a request handler with a specific request
 // path and HTTP verb using the Express routing API.
-app.get('/hello', function(req, res) {
-  res.render('hello', { message: 'Congrats, you just set up your app!' });
+
+app.get('/', function(req, res) {
+  res.render('index');
+});
+
+app.get('/home', function(req, res) {
+  res.render('home');
+});
+
+app.get('/budget', function(req, res) {
+  res.render('budget');
+});
+
+app.get('/buckets', function(req, res) {
+  res.render('buckets');
+});
+
+app.get('/daily', function(req, res) {
+  res.render('daily');
+});
+
+app.get('/goal', function(req, res) {
+  res.render('goal');
+});
+
+app.get('/settings', function(req, res) {
+  res.render('settings');
 });
 
 // // Example reading from the request query string of an HTTP get request.
