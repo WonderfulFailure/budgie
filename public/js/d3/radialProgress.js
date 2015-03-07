@@ -1,106 +1,35 @@
-'use strict';
+/**
+ Copyright (c) 2014 BrightPoint Consulting, Inc.
 
-var app = angular.module('budgie', [
-  'ngRoute',
-  'ngAnimate'
-])
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
 
-.config(['$routeProvider', '$httpProvider', '$locationProvider', function($routeProvider, $httpProvider, $locationProvider) {
-    $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-    $routeProvider
-        .when('/budget', {
-            templateUrl: '/budget',
-            controller: 'BudgetController'
-        })
-        .when('/buckets', {
-            templateUrl: '/buckets',
-            controller: 'BucketsController'
-        })
-        .when('/daily', {
-            templateUrl: '/daily',
-            controller: 'DailyController'
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
 
-        })
-        .when('/goal', {
-            templateUrl: '/goal',
-            controller: 'GoalController'
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+ */
 
-        })
-        .when('/spend', {
-            templateUrl: '/spend',
-            controller: 'SpendController'
-
-        })
-        .when('/save', {
-            templateUrl: '/save',
-            controller: 'SaveController'
-
-        })
-        .when('/settings', {
-            templateUrl: '/settings',
-            controller: 'SettingsController'
-        })
-        .otherwise({redirectTo: '/'});
-}])
-
-.controller('BudgetController', function($scope, $routeParams) {
-    $scope.amountCents = "";
-    $scope.pageClass = 'page-budget';
-    $scope.updateDollars = function(event) {
-        var num = event.which || event.keyCode;
-        if(num > 47 && num < 58) {
-            $scope.amountCents = $scope.amountCents.concat(String.fromCharCode(num));
-        }
-        else if(num == 8) {
-            $scope.amountCents = $scope.amountCents.substring(0, $scope.amountCents.length - 1);
-        }
-
-        var amount = parseFloat($scope.amountCents / 100).toFixed(2);
-        if(String(amount).length <= 4)
-            amount = 0 + String(amount);
-        $scope.amount = amount;
-    }
-})
-
-.controller('SettingsController', function($scope, $routeParams) {
-    $scope.pageClass = 'page-settings';
-})
-
-.controller('GoalController', function($scope, $routeParams) {
-    $scope.pageClass = 'page-goal';
-})
-
-.controller('DailyController', function($scope, $routeParams) {
-    $scope.todaysDate = new Date();
-    $scope.pageClass = 'page-daily';
-})
-
-.controller('SaveController', function($scope, $routeParams) {
-    $scope.pageClass = 'page-save';
-})
-
-.controller('SpendController', function($scope, $routeParams) {
-    $scope.pageClass = 'page-spend';
-})
-
-.controller('BucketsController', function($scope, $routeParams) {
-    $scope.pageClass = 'page-buckets';
-});
-
-angular.module( 'budgie').directive( 'd3Radial', [
-  function () {
-    return {
-      restrict: 'E',
-      scope: {
-        data: '='
-      },
-      link: function (scope, parent) {
-        var _data=null,
+function radialProgress(parent) {
+    var _data=null,
         _duration= 1000,
         _selection,
         _margin = {top:0, right:0, bottom:30, left:0},
-        __width = 120,
-        __height = 120,
+        __width = 300,
+        __height = 300,
         _diameter,
         _label="",
         _fontSize=10;
@@ -326,13 +255,4 @@ angular.module( 'budgie').directive( 'd3Radial', [
 
     return component;
 
-         //Watch 'data' and run scope.render(newVal) whenever it changes
-         //Use true for 'objectEquality' property so comparisons are done on equality and not reference
-          scope.$watch('data', function(){
-              scope.render(scope.data);
-          }, true);
-        }
-    };
-  }
-]);
-
+}

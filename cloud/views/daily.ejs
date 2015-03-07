@@ -1,5 +1,15 @@
-<h1>Daily Budget Page</h1>
-<p>Add daily budget d3 radial here</p>
-<a href="#/buckets">Go to buckets</a>
-<a href="#/spend">Go to spend</a>
+<h2>{{ todaysDate | date : 'EEEE, MMMM d' }}</h2>
+<div id="div1"></div>
+<a href="#/buckets" class="btn btn-lg btn-primary">Save</a>
+<a href="#/spend" class="btn btn-lg btn-primary">Spend</a>
 <a href="#/settings">Go to settings</a>
+
+<script language="JavaScript">
+
+var rp1 = radialProgress(document.getElementById('div1'))
+                .diameter(300)
+                .value(380)
+                .maxValue(1000)
+                .render();
+
+</script>
