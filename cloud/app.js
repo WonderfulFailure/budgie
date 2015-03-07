@@ -20,7 +20,38 @@ app.get('/home', function(req, res) {
 });
 
 app.get('/budget', function(req, res) {
-  res.render('budget');
+    var User = Parse.Object.extend('_User');
+    var query = new Parse.Query(User);
+    var userObj;
+    var userTransactions;
+    query.get('ivWt4BYMS0', {
+        success: function(user) {
+            console.log(user);
+            userObj = user;
+        },
+
+        error: function(object, error) {
+            // Error yo
+            console.log(error);
+        }
+
+    })
+    .then(function() {
+        var Transactions = Parse.Object.extend('Transactions');
+        var query = new Parse.Query(Transactions);
+        query.equalTo('owner', userObj);
+        return query.find({
+          success: function(results) {
+            userTransactions = results;
+          },
+          error: function(error) {
+            alert("Error: " + error.code + " " + error.message);
+          }
+        });
+    })
+    .then(function() {
+        res.render('budget', { user: userObj, transactions: userTransactions });
+    });
 });
 
 app.get('/buckets', function(req, res) {
