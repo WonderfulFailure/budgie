@@ -1,16 +1,17 @@
 .page {
     bottom:0;
-    padding-top:200px;
     position:absolute;
     text-align:center;
     top:0;
     width:100%;
+    background-color: #fff;
+    left: 0;
 }
 
 /* Transitions */
 /* slide in from the bottom */
 @-webkit-keyframes slideOutLeft {
-    to      { -webkit-transform: translateX(-100%); }
+    to      { -webkit-transform: translateX(-100%); transform: translateX(-100%); }
 }
 
 @keyframes slideOutLeft {
@@ -20,8 +21,8 @@
 /* slide in from the right */
 
 @-webkit-keyframes slideInRight {
-    from    { -webkit-transform: translateX(100%); }
-    to      { -webkit-transform: translateX(0); }
+    from    { -webkit-transform: translateX(100%); transform: translateX(100%); }
+    to      { -webkit-transform: translateX(0); transform: translateX(0); }
 }
 @keyframes slideInRight {
     from    { transform: translateX(100%); }
