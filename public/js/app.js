@@ -235,7 +235,7 @@ angular.module( 'budgie').directive( 'd3Radial', [
 
         return function(t) {
             _currentValue = i(t);
-            this.textContent = "$" + parseFloat(Math.round(i(t)) / 10).toFixed(2);
+            this.textContent = "$" + parseFloat(i / 10).toFixed(2);
         }
     }
 

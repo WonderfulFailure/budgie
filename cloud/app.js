@@ -20,7 +20,15 @@ app.get('/home', function(req, res) {
 });
 
 app.get('/budget', function(req, res) {
-    var User = Parse.Object.extend('_User');
+    res.render('budget');
+});
+
+app.get('/buckets', function(req, res) {
+  res.render('buckets');
+});
+
+app.get('/daily', function(req, res) {
+  var User = Parse.Object.extend('_User');
     var query = new Parse.Query(User);
     var userObj;
     var userTransactions;
@@ -43,6 +51,7 @@ app.get('/budget', function(req, res) {
         return query.find({
           success: function(results) {
             userTransactions = results;
+            console.log(results);
           },
           error: function(error) {
             alert("Error: " + error.code + " " + error.message);
@@ -50,16 +59,8 @@ app.get('/budget', function(req, res) {
         });
     })
     .then(function() {
-        res.render('budget', { user: userObj, transactions: userTransactions });
+        res.render('daily', { user: userObj, transactions: userTransactions });
     });
-});
-
-app.get('/buckets', function(req, res) {
-  res.render('buckets');
-});
-
-app.get('/daily', function(req, res) {
-  res.render('daily');
 });
 
 app.get('/goal', function(req, res) {

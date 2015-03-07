@@ -1,5 +1,13 @@
 <h2>{{ todaysDate | date : 'EEEE, MMMM d' }}</h2>
 <div id="div1"></div>
+<ul id="transactions">
+    <% var total = 0; %>
+    <% for(var i=0; i < transactions.length; i++) { %>
+    <li><%= transactions[i].get("label") %> - $<%= parseFloat(transactions[i].get("amount") / 100).toFixed(2) %></li>
+    <% total = total + transactions[i].get("amount"); %>
+    <% } %>
+    <li class="total">Total purchases - $<%= parseFloat(total / 100).toFixed(2) %></li>
+</ul>
 <a href="#/buckets" class="btn btn-lg btn-primary">Save</a>
 <a href="#/spend" class="btn btn-lg btn-primary">Spend</a>
 <a href="#/settings">Go to settings</a>
@@ -8,8 +16,8 @@
 
 var rp1 = radialProgress(document.getElementById('div1'))
                 .diameter(300)
-                .value(380)
-                .maxValue(1000)
+                .value(<%= user.get('dailyBudget') - total %>)
+                .maxValue(<%= user.get('dailyBudget') %>)
                 .render();
 
 </script>
