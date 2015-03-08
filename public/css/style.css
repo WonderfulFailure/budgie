@@ -8,6 +8,15 @@
     left: 0;
 }
 
+.btn.btn-teal {
+    color: #3ad3dd;
+    background-color: #ffffff;
+    border: 1px solid #3ad3dd;
+}
+
+.total {
+    border-top: 1px solid #3ad3dd;
+}
 
 /* Transitions */
 /* slide in from the bottom */
