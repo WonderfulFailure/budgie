@@ -3,7 +3,7 @@
 <div id="div1"></div>
 <div class="contribution">${{ amount / 100 | number: 2 }}</div>
 <form ng-submit="processForm()">
-    <input type="range" class="form-control" min="0" max="{{ remainingBudget }}" value="100" step="10" ng-change="updateSlider($event)" ng-model="amount">
-    <input type="submit" class="btn btn-teal btn-lg" value="Save" />
+    <input type="range" style="border:none;-webkit-box-shadow:none;" class="form-control" min="0" max="{{ remainingBudget }}" value="100" step="10" ng-change="updateSlider($event)" ng-model="amount">
+    <input type="submit" style="margin:10px auto;" class="btn btn-teal btn-lg" value="Save" />
 </form>
-<a href="#/daily" class="btn btn-default">NVM</a>
+<a href="#/daily" style="margin:10px auto;" class="btn btn-default">NVM</a>
