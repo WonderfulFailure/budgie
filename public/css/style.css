@@ -24,6 +24,18 @@
     border-top: 1px solid #3ad3dd;
 }
 
+.big-input {
+    font-size: 56px;
+    font-weight: 100;
+    padding: 0 50px;
+}
+
+.big-input input {
+    border:none;
+    width:60%;
+    text-align: right;
+}
+
 h2 {
     margin-top:30px;
 }
