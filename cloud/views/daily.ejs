@@ -11,15 +11,19 @@
 	</li>
     <% total = total + transactions[i].get("amount"); %>
     <% } %>
-    <li class="total row-fluid">
-    	<div class="col-xs-8 text-left">Total purchases</div>
-    	<div class="col-xs-4 text-right">$<%= parseFloat(total / 100).toFixed(2) %></div>
+    <li class="row-fluid">
+    			<div class="col-xs-8 text-left">Total purchases</div>
+    			<div class="col-xs-4 text-right">$<%= parseFloat(total / 100).toFixed(2) %></div>
 	</li>
 </ul>
 
 	<div class="row-fluid">
-<a href="#/buckets" class="btn btn-lg btn-primary col-xs-6">Save</a>
-<a href="#/spend" class="btn btn-lg btn-primary col-xs-6">Spend</a>
+<div class="col-xs-6">
+	<a href="#/buckets" class="btn btn-teal btn-lg">Save</a>
+</div>
+<div class="col-xs-6">
+<a href="#/spend" class="btn btn-teal btn-lg">Spend</a>
+</div>
 	</div>
 
 <!-- <a href="#/settings">Go to settings</a> -->
