@@ -57,7 +57,7 @@ app.get('/daily', function(req, res) {
             alert("Error: " + error.code + " " + error.message);
           }
         });
-    })
+    })/*
     .then(function() {
         var User = Parse.Object.extend("User");
         var newUserObj = new User();
@@ -78,7 +78,7 @@ app.get('/daily', function(req, res) {
                 console.log('Error saving todays budget');
             }
         })
-    })
+    })*/
     .then(function() {
         res.render('daily', { user: userObj, transactions: userTransactions });
     });
@@ -193,7 +193,26 @@ app.post('/spend-save-sms', function(req, res) {
         var amountInCents = Math.round(amount * 100);
         var Transaction = Parse.Object.extend("Transactions");
         var cashTrans = new Transaction();
-        if(!amount) res.send('-1');
+        if(!amount) {
+            return Parse.Cloud.httpRequest({
+                          method: "POST",
+                          url: "https://rest.nexmo.com/sms/json",
+                          body: {
+                             api_key: 'b2d131d2',
+                             api_secret: '7b5388b8',
+                             from: req.body.to,
+                             to: req.body.msisdn,
+                             text: "Pweeep! Today's budget is $" + parseFloat(userObj.get('todaysBudget') / 100).toFixed(2) + '!'
+                          },
+                          success: function(httpResponse) {
+                            console.log(httpResponse.text);
+                            res.send("0");
+                          },
+                          error: function(httpResponse) {
+                            console.error('Request failed with response code ' + httpResponse.status);
+                          }
+                        });
+        }
         return cashTrans.save({
             label: 'Cash via SMS',
             amount: amountInCents,
