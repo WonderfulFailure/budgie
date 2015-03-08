@@ -12,6 +12,11 @@
     height: 270px;
 }
 
+#div2,
+#div3 {
+    display: inline-block;
+}
+
 .btn.btn-teal {
     color: #3ad3dd;
     background-color: #ffffff;
@@ -36,11 +41,46 @@
     text-align: right;
 }
 
+.contribution {
+    font-size: 56px;
+    font-weight: 100;
+}
+
 h2 {
     margin-top:30px;
     font-size: 24px;
     text-transform: uppercase;
     font-weight:100;
+}
+
+input[type=range]{
+    -webkit-appearance: none;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+    width: 300px;
+    height: 5px;
+    background: #ddd;
+    border: none;
+    border-radius: 3px;
+}
+
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    border: none;
+    height: 32px;
+    width: 32px;
+    border-radius: 50%;
+    background: goldenrod;
+    margin-top: -13px;
+}
+
+input[type=range]:focus {
+    outline: none;
+}
+
+input[type=range]:focus::-webkit-slider-runnable-track {
+    background: #ccc;
 }
 
 /* slide up from bottom */

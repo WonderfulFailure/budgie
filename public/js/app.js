@@ -164,15 +164,15 @@ var app = angular.module('budgie', [
             bucketGoal = data.goal;
 
             $scope.contributedToBucket = contributedToBucket;
+            $scope.bucketName = data.title;
 
-            var rp1 = radialProgress(document.getElementById('div3'))
-                    .diameter(300)
+            var rp1 = radialProgressSmall(document.getElementById('div3'))
+                    .diameter(150)
                     .value(contributedToBucket)
                     .maxValue(bucketGoal)
-                    .innerLabel(contributedToBucket)
                     .render();
-            var rp2 = radialProgress(document.getElementById('div2'))
-                    .diameter(300)
+            var rp2 = radialProgressSmall(document.getElementById('div2'))
+                    .diameter(150)
                     .value(remainingBudget)
                     .maxValue(dailyBudget)
                     .innerLabel(remainingBudget)
@@ -181,15 +181,15 @@ var app = angular.module('budgie', [
     });
 
     $scope.updateSlider = function(event) {
-        var rp1 = radialProgress(document.getElementById('div3'))
-            .diameter(300)
+        var rp1 = radialProgressSmall(document.getElementById('div3'))
+            .diameter(150)
             .currentArc(parseFloat(newContribution / bucketGoal) * (2*Math.PI))
             .value(parseInt($scope.amount) + parseInt(contributedToBucket))
             .maxValue(parseInt(bucketGoal))
             .render();
         newContribution = parseInt($scope.amount) + parseInt(contributedToBucket);
-        var rp2 = radialProgress(document.getElementById('div2'))
-            .diameter(300)
+        var rp2 = radialProgressSmall(document.getElementById('div2'))
+            .diameter(150)
             .currentArc(parseFloat(newBudget / dailyBudget) * (2*Math.PI))
             .currentArc2(0)
             .value(remainingBudget - parseInt($scope.amount))
