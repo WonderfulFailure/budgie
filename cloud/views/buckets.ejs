@@ -1,9 +1,9 @@
 <h2>Save some money</h2>
 <div id="div2"></div>
 <div id="div1"></div>
-<div>${{ amount / 100 | number: 2 }}</div>
+<div class="contribution">${{ amount / 100 | number: 2 }}</div>
 <form ng-submit="processForm()">
     <input type="range" class="form-control" min="0" max="{{ remainingBudget }}" value="100" step="10" ng-change="updateSlider($event)" ng-model="amount">
-    <input type="submit" class="btn btn-primary" value="Save" />
+    <input type="submit" class="btn btn-teal btn-lg" value="Save" />
 </form>
 <a href="#/daily" class="btn btn-default">NVM</a>
