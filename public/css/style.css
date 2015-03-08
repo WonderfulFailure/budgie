@@ -12,6 +12,11 @@
     height: 270px;
 }
 
+#div2,
+#div3 {
+    display: inline-block;
+}
+
 .btn.btn-teal {
     color: #3ad3dd;
     background-color: #ffffff;

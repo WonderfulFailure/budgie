@@ -57,7 +57,7 @@ app.get('/daily', function(req, res) {
             alert("Error: " + error.code + " " + error.message);
           }
         });
-    })
+    })/*
     .then(function() {
         var User = Parse.Object.extend("User");
         var newUserObj = new User();
@@ -78,7 +78,7 @@ app.get('/daily', function(req, res) {
                 console.log('Error saving todays budget');
             }
         })
-    })
+    })*/
     .then(function() {
         res.render('daily', { user: userObj, transactions: userTransactions });
     });
@@ -281,33 +281,67 @@ app.get('/bucket-list', function(req, res) {
 app.post('/bucket-save', function(req, res) {
     var Buckets = Parse.Object.extend("Buckets");
     var User = Parse.Object.extend("User");
-    var query = new Parse.Query(Buckets);
-    var User = new User();
+    var query = new Parse.Query(User);
+    var userObj;
     var amount = req.body.amount;
-    console.log(amount);
-    User.id = 'ivWt4BYMS0';
+    var bucketObj;
     Parse.Cloud.useMasterKey();
-    query.equalTo('owner', User);
-    query.first({
-        success: function(bucket) {
-            console.log(bucket);
-            bucket.increment("progress", amount)
-            console.log(bucket);
-            bucket.save(null, {
-                success: function() {
-                    res.send("0");
-                },
-                error: function(erroredBucket, error) {
-                    console.log(erroredBucket);
-                    console.log(error);
-                    res.send("-1");
-                }
-            });
+    query.get('ivWt4BYMS0', {
+        success: function(user) {
+            userObj = user;
         },
-        error: function(bucketError, error) {
-            console.log('Error saving bucket contribution');
+
+        error: function(object, error) {
+            // Error yo
+            //console.log(error);
             res.send("-1");
         }
+
+    })
+    .then(function() {
+        query = new Parse.Query(Buckets);
+        query.equalTo('owner', userObj);
+        return query.first({
+            success: function(bucket) {
+                bucketObj = bucket;
+                bucket.set('progress', parseInt(amount) + parseInt(bucket.get('progress')))
+                bucket.save(null, {
+                    success: function() {
+                        //console.log('Saved contribution');
+                    },
+                    error: function(erroredBucket, error) {
+                        //console.log(erroredBucket);
+                        //console.log(error);
+                        res.send("-1");
+                    }
+                });
+            },
+            error: function(bucketError, error) {
+                console.log('Error saving bucket contribution');
+                res.send("-1");
+            }
+        });
+    })
+    .then(function() {
+        var Transaction = Parse.Object.extend("Transactions");
+        var cashTrans = new Transaction();
+        console.log(bucketObj);
+        return cashTrans.save({
+            label: bucketObj.get('label'),
+            amount: amount,
+            owner: userObj
+        }, {
+            success: function() {
+                console.log('success');
+                res.send("0");
+            },
+            error: function(errorTrans, error) {
+                console.log(errorTrans);
+                console.log(error);
+                console.log('error');
+                res.send("-1");
+            }
+        });
     });
 });
 

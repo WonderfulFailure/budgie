@@ -1,9 +1,20 @@
 <h2>Save some money</h2>
+<div class="bucket-labels">
+    <div class="row">
+        <div class="col-xs-6">
+            Today's balance
+        </div>
+        <div class="col-xs-6">
+            {{ bucketName }}
+        </div>
+    </div>
+</div>
 <div id="div2"></div>
-<div id="div1"></div>
+<div id="div3"></div>
 <div class="contribution">${{ amount / 100 | number: 2 }}</div>
 <form ng-submit="processForm()">
     <input type="range" style="border:none;-webkit-box-shadow:none;" class="form-control" min="0" max="{{ remainingBudget }}" value="100" step="10" ng-change="updateSlider($event)" ng-model="amount">
     <input type="submit" style="margin:10px auto;" class="btn btn-teal btn-lg" value="Save" />
 </form>
+
 <a href="#/daily" style="margin:10px auto;" class="btn btn-default">NVM</a>
