@@ -119,8 +119,6 @@ var app = angular.module('budgie', [
           headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
       .success(function(data) {
-        console.log(data);
-
         if (data != 0) {
           // if not successful, bind errors to error variables
           console.log('something went wrong');

@@ -124,7 +124,7 @@ app.post('/spend-save', function(req, res) {
         var Transaction = Parse.Object.extend("Transactions");
         var cashTrans = new Transaction();
         cashTrans.save({
-            label: 'Cash Purchase',
+            label: 'Cash via app',
             amount: amountInCents,
             owner: userObj
         }, {
@@ -194,7 +194,7 @@ app.post('/spend-save-sms', function(req, res) {
         var Transaction = Parse.Object.extend("Transactions");
         var cashTrans = new Transaction();
         return cashTrans.save({
-            label: 'Cash Purchase (SMS)',
+            label: 'Cash via SMS',
             amount: amountInCents,
             owner: userObj
         }, {
@@ -243,6 +243,8 @@ app.get('/transactions', function(req, res) {
     var User = new User();
     User.id = 'ivWt4BYMS0';
     query.equalTo('owner', User);
+    query.limit(8);
+    query.ascending("updatedAt");
     query.find({
         success: function(transactions) {
             res.send(transactions);
