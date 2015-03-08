@@ -129,8 +129,8 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 .page-save.ng-enter { -webkit-animation: slideUp 0.5s both ease-in; z-index: 9999;}
 .page-save.ng-leave { -webkit-animation: slideDown 0.5s both ease-in; z-index: 9999;}
 
-.page-buckets.ng-enter { -webkit-animation: none!important; z-index: 7777;}
-.page-buckets.ng-leave { -webkit-animation: stayPut 0.5s both ease-in; z-index: 7777;}
+.page-buckets.ng-enter { -webkit-animation: slideUp 0.5s both ease-in; z-index: 9999;}
+.page-buckets.ng-leave { -webkit-animation: slideDown 0.5s both ease-in; z-index: 9999;}
 
 .page-daily.ng-enter { -webkit-animation: none!important; z-index: 7777;}
 .page-daily.ng-leave { -webkit-animation: stayPut 0.5s both ease-in; z-index: 7777;}

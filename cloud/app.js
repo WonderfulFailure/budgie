@@ -57,7 +57,7 @@ app.get('/daily', function(req, res) {
             alert("Error: " + error.code + " " + error.message);
           }
         });
-    })/*
+    })
     .then(function() {
         var User = Parse.Object.extend("User");
         var newUserObj = new User();
@@ -78,7 +78,7 @@ app.get('/daily', function(req, res) {
                 console.log('Error saving todays budget');
             }
         })
-    })*/
+    })
     .then(function() {
         res.render('daily', { user: userObj, transactions: userTransactions });
     });
@@ -331,6 +331,22 @@ app.post('/bucket-save', function(req, res) {
                 res.send("0");
             },
             error: function(object, error) {
+                res.send(error);
+            }
+        });
+    })
+    .then(function() {
+        userObj.set('todaysBudget', userObj.get('todaysBudget') - amount);
+        Parse.Cloud.useMasterKey();
+        return userObj.save(null, {
+            success: function(savedUser) {
+                console.log('Saved todays budget');
+                res.send("0");
+            },
+            error: function(erroredTransaction, error) {
+                console.log(error);
+                console.log(erroredTransaction);
+                console.log('Error saving todays budget');
                 res.send(error);
             }
         });
