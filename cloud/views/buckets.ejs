@@ -15,7 +15,7 @@
 </div>
 <div class="contribution">${{ amount / 100 | number: 2 }}</div>
 <form ng-submit="processForm()">
-    <input type="range" style="border:none;-webkit-box-shadow:none;width:80%;margin:0 auto;" class="form-control" min="0" max="{{ remainingBudget }}" value="100" step="10" ng-change="updateSlider($event)" ng-model="amount">
+    <input type="range" style="border:none;-webkit-box-shadow:none;width:80%;margin:0 auto;" class="form-control" min="0" max="{{ remainingBudget }}" value="100" step="1" ng-change="updateSlider($event)" ng-model="amount">
     <input type="submit" style="margin:10px auto;" class="btn btn-teal btn-lg" value="Save" />
 </form>
 
