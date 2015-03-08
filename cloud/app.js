@@ -193,6 +193,7 @@ app.post('/spend-save-sms', function(req, res) {
         var amountInCents = Math.round(amount * 100);
         var Transaction = Parse.Object.extend("Transactions");
         var cashTrans = new Transaction();
+        if(!amount) res.send('-1');
         return cashTrans.save({
             label: 'Cash via SMS',
             amount: amountInCents,
@@ -259,6 +260,53 @@ app.get('/user', function(req, res) {
     query.first({
         success: function(transactions) {
             res.send(transactions);
+        }
+    });
+});
+
+app.get('/bucket-list', function(req, res) {
+    var Buckets = Parse.Object.extend("Buckets");
+    var User = Parse.Object.extend("User");
+    var query = new Parse.Query(Buckets);
+    var User = new User();
+    User.id = 'ivWt4BYMS0';
+    query.equalTo('owner', User);
+    query.first({
+        success: function(transactions) {
+            res.send(transactions);
+        }
+    });
+});
+
+app.post('/bucket-save', function(req, res) {
+    var Buckets = Parse.Object.extend("Buckets");
+    var User = Parse.Object.extend("User");
+    var query = new Parse.Query(Buckets);
+    var User = new User();
+    var amount = req.body.amount;
+    console.log(amount);
+    User.id = 'ivWt4BYMS0';
+    Parse.Cloud.useMasterKey();
+    query.equalTo('owner', User);
+    query.first({
+        success: function(bucket) {
+            console.log(bucket);
+            bucket.increment("progress", amount)
+            console.log(bucket);
+            bucket.save(null, {
+                success: function() {
+                    res.send("0");
+                },
+                error: function(erroredBucket, error) {
+                    console.log(erroredBucket);
+                    console.log(error);
+                    res.send("-1");
+                }
+            });
+        },
+        error: function(bucketError, error) {
+            console.log('Error saving bucket contribution');
+            res.send("-1");
         }
     });
 });
