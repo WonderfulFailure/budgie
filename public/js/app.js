@@ -130,7 +130,7 @@ var app = angular.module('budgie', [
     }
 })
 
-.controller('BucketsController', function($scope, $routeParams, $http) {
+.controller('BucketsController', function($scope, $routeParams, $http, $location) {
     $scope.pageClass = 'page-buckets';
     $scope.amount = "00.00";
 
@@ -165,7 +165,7 @@ var app = angular.module('budgie', [
 
             $scope.contributedToBucket = contributedToBucket;
 
-            var rp1 = radialProgress(document.getElementById('div1'))
+            var rp1 = radialProgress(document.getElementById('div3'))
                     .diameter(300)
                     .value(contributedToBucket)
                     .maxValue(bucketGoal)
@@ -181,7 +181,7 @@ var app = angular.module('budgie', [
     });
 
     $scope.updateSlider = function(event) {
-        var rp1 = radialProgress(document.getElementById('div1'))
+        var rp1 = radialProgress(document.getElementById('div3'))
             .diameter(300)
             .currentArc(parseFloat(newContribution / bucketGoal) * (2*Math.PI))
             .value(parseInt($scope.amount) + parseInt(contributedToBucket))
@@ -202,7 +202,7 @@ var app = angular.module('budgie', [
     $scope.processForm = function() {
         $http({
           method  : 'POST',
-          url     : '/spend-save',
+          url     : '/bucket-save',
           data    : 'amount=' + $scope.amount,  // pass in data as strings
           headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
