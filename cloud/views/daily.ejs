@@ -1,6 +1,6 @@
 <h2 style="font-size: 24px;text-transform: uppercase;font-weight:100;">{{ todaysDate | date : 'EEEE, MMMM d' }}</h2>
 <div id="div1" style="margin:30px 0 0 0"></div>
-<ul id="transactions" class="list-unstyled clearfix" style="font-weight:200;width:60%;margin:30px auto 0 auto" >
+<ul id="transactions" class="list-unstyled clearfix" style="font-weight:200;width:60%;margin:30px auto 30px auto" >
     <% var total = 0; %>
     <% for(var i=0; i < transactions.length; i++) { %>
     <li>
@@ -16,9 +16,13 @@
     	<div class="col-xs-4 text-right">$<%= parseFloat(total / 100).toFixed(2) %></div>
 	</li>
 </ul>
-<a href="#/buckets" class="btn btn-lg btn-primary">Save</a>
-<a href="#/spend" class="btn btn-lg btn-primary">Spend</a>
-<a href="#/settings">Go to settings</a>
+
+	<div class="row-fluid">
+<a href="#/buckets" class="btn btn-lg btn-primary col-xs-6">Save</a>
+<a href="#/spend" class="btn btn-lg btn-primary col-xs-6">Spend</a>
+	</div>
+
+<!-- <a href="#/settings">Go to settings</a> -->
 
 <script language="JavaScript">
 
