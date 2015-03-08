@@ -40,7 +40,7 @@ var app = angular.module('budgie', [
             templateUrl: '/settings',
             controller: 'SettingsController'
         })
-        .otherwise({redirectTo: '/'});
+        .otherwise({redirectTo: '/daily'});
 }])
 
 .controller('BudgetController', function($scope, $routeParams) {
