@@ -1,19 +1,26 @@
 <h2 style="font-size: 24px;text-transform: uppercase;font-weight:100;">{{ todaysDate | date : 'EEEE, MMMM d' }}</h2>
 <div id="div1" style="margin:30px 0 0 0"></div>
 
-<ul id="transactions" class="list-unstyled clearfix" style="font-weight:200;width:60%;margin:30px auto 0 auto" >
+<ul id="transactions" class="list-unstyled clearfix" style="font-weight:200;width:60%;margin:30px auto 30px auto" >
     <li ng-repeat="transaction in transactions">
     	<div class="row-fluid">
     		<div class="col-xs-8 text-left">{{ transaction.label }}</div>
     		<div class="col-xs-4 text-right">${{ transaction.amount / 100 | number:2 }}</div>
 		</div>
 	</li>
-    <li class="total row-fluid">
-        <% var total = 0 %>
-    	<div class="col-xs-8 text-left">Total purchases</div>
-    	<div class="col-xs-4 text-right">$<%= parseFloat(total / 100).toFixed(2) %></div>
+    <li class="row-fluid">
+    			<div class="col-xs-8 text-left">Total purchases</div>
+    			<div class="col-xs-4 text-right">$<%= parseFloat(total / 100).toFixed(2) %></div>
 	</li>
 </ul>
-<a href="#/buckets" class="btn btn-lg btn-primary">Save</a>
-<a href="#/spend" class="btn btn-lg btn-primary">Spend</a>
-<a href="#/settings">Go to settings</a>
+
+	<div class="row-fluid">
+<div class="col-xs-6">
+	<a href="#/buckets" class="btn btn-teal btn-lg">Save</a>
+</div>
+<div class="col-xs-6">
+<a href="#/spend" class="btn btn-teal btn-lg">Spend</a>
+</div>
+	</div>
+
+<!-- <a href="#/settings">Go to settings</a> -->
