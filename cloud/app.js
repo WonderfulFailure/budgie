@@ -372,6 +372,10 @@ app.post('/bucket-save', function(req, res) {
     });
 });
 
+app.get('/premium', function(req, res) {
+  res.render('premium');
+});
+
 // // Example reading from the request query string of an HTTP get request.
 // app.get('/test', function(req, res) {
 //   // GET http://example.parseapp.com/test?message=hello

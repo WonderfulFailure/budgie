@@ -40,6 +40,10 @@ var app = angular.module('budgie', [
             templateUrl: '/settings',
             controller: 'SettingsController'
         })
+        .when('/premium', {
+            templateUrl: '/premium',
+            controller: 'PremiumController'
+        })
         .otherwise({redirectTo: '/daily'});
 }])
 
@@ -216,6 +220,10 @@ var app = angular.module('budgie', [
         }
       });
     }
+})
+
+.controller('PremiumController', function($scope, $routeParams) {
+    $scope.pageClass = 'page-premium';
 });
 
 

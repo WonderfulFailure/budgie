@@ -18,6 +18,13 @@
     height:130px;
 }
 
+.btn.btn-gold {
+    color: #eec60d;
+    background-color: #ffffff;
+    border: 1px solid #eec60d;
+    display:inline-block;
+}
+
 .btn.btn-teal {
     color: #3ad3dd;
     background-color: #ffffff;
@@ -77,7 +84,7 @@ input[type=range]::-webkit-slider-thumb {
     height: 32px;
     width: 32px;
     border-radius: 50%;
-    background: goldenrod;
+    background: #eec60d;
     margin-top: -13px;
 }
 
@@ -87,6 +94,16 @@ input[type=range]:focus {
 
 input[type=range]:focus::-webkit-slider-runnable-track {
     background: #ccc;
+}
+
+#premium-btn {
+    position: absolute;
+    top: 31px;
+    left: 10px;
+}
+
+.page-premium img {
+    width: 100%;
 }
 
 /* slide up from bottom */
@@ -100,6 +117,7 @@ input[type=range]:focus::-webkit-slider-runnable-track {
     to      { transform: translateY(0); }
 }
 
+
 /* slide down from bottom */
 
 @-webkit-keyframes slideDown {
@@ -109,6 +127,28 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 @keyframes slideDown {
     from    { transform: translateY(0%); }
     to      { transform: translateY(100%); }
+}
+
+/* slide from left */
+
+@-webkit-keyframes slideFromLeft {
+    from    { -webkit-transform: translateX(-100%); }
+    to      { -webkit-transform: translateX(0); }
+}
+@keyframes slideFromLeft {
+    from    { transform: translateX(-100%); }
+    to      { transform: translateX(0); }
+}
+
+/* slide to left */
+
+@-webkit-keyframes slideToLeft {
+    from    { -webkit-transform: translateX(0); }
+    to      { -webkit-transform: translateX(-100%); }
+}
+@keyframes slideToLeft {
+    from    { transform: translateX(0); }
+    to      { transform: translateX(-100%); }
 }
 
 /*don't move at all */
@@ -134,6 +174,9 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 
 .page-daily.ng-enter { -webkit-animation: none!important; z-index: 7777;}
 .page-daily.ng-leave { -webkit-animation: stayPut 0.5s both ease-in; z-index: 7777;}
+
+.page-premium.ng-enter { -webkit-animation: slideFromLeft 0.5s both ease-in; z-index: 9999;}
+.page-premium.ng-leave { -webkit-animation: slideToLeft 0.5s both ease-in; z-index: 9999;}
 
 
 
