@@ -280,7 +280,7 @@ app.get('/bucket-list', function(req, res) {
 
 app.post('/bucket-save', function(req, res) {
     var Buckets = Parse.Object.extend("Buckets");
-    var User = Parse.Object.extend("User");
+    var User = Parse.Object.extend("_User");
     var query = new Parse.Query(User);
     var userObj;
     var amount = req.body.amount;
@@ -289,57 +289,49 @@ app.post('/bucket-save', function(req, res) {
     query.get('ivWt4BYMS0', {
         success: function(user) {
             userObj = user;
+            //res.send("0");
         },
 
         error: function(object, error) {
             // Error yo
-            //console.log(error);
             res.send("-1");
         }
 
     })
     .then(function() {
-        query = new Parse.Query(Buckets);
-        query.equalTo('owner', userObj);
-        return query.first({
+        query2 = new Parse.Query(Buckets);
+        query2.equalTo('owner', userObj);
+        return query2.first({
             success: function(bucket) {
                 bucketObj = bucket;
-                bucket.set('progress', parseInt(amount) + parseInt(bucket.get('progress')))
+                bucket.set('progress', parseInt(amount) + parseInt(bucket.get('progress')));
                 bucket.save(null, {
                     success: function() {
-                        //console.log('Saved contribution');
+                        //res.send("0");
                     },
                     error: function(erroredBucket, error) {
-                        //console.log(erroredBucket);
-                        //console.log(error);
                         res.send("-1");
                     }
                 });
             },
             error: function(bucketError, error) {
-                console.log('Error saving bucket contribution');
                 res.send("-1");
             }
         });
     })
     .then(function() {
         var Transaction = Parse.Object.extend("Transactions");
-        var cashTrans = new Transaction();
-        console.log(bucketObj);
-        return cashTrans.save({
-            label: bucketObj.get('label'),
-            amount: amount,
+        var bucketTrans = new Transaction();
+        return bucketTrans.save({
+            label: bucketObj.get('title'),
+            amount: parseInt(amount),
             owner: userObj
         }, {
-            success: function() {
-                console.log('success');
+            success: function(savedTrans) {
                 res.send("0");
             },
-            error: function(errorTrans, error) {
-                console.log(errorTrans);
-                console.log(error);
-                console.log('error');
-                res.send("-1");
+            error: function(object, error) {
+                res.send(error);
             }
         });
     });
