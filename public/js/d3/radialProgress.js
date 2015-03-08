@@ -118,7 +118,7 @@ function radialProgress(parent) {
                 .attr("cursor","pointer")
                 .attr("width",_width)
                 // .attr("x",(3*_fontSize/2))
-                .text(function (d) { return Math.round((_value-_minValue)/(_maxValue-_minValue)*100) + "%" })
+                .text(function (d) { return "$" + parseFloat(_value / 100).toFixed(2)})
                 .style("font-size",_fontSize+"px")
                 .on("click",onMouseClick);
 
@@ -164,7 +164,7 @@ function radialProgress(parent) {
 
         return function(t) {
             _currentValue = i(t);
-            this.textContent = "$" + parseFloat((i(t)) / 10).toFixed(2);
+            this.textContent = "$" + parseFloat(_value / 100).toFixed(2);
         }
     }
 
@@ -223,6 +223,18 @@ function radialProgress(parent) {
         return component;
     };
 
+    component.currentArc = function(_) {
+        if(!arguments.length) return _currentArc
+        _currentArc = _;
+        return component;
+    };
+
+    component.currentArc2 = function(_) {
+        if(!arguments.length) return _currentArc2
+        _currentArc2 = _;
+        return component;
+    }
+
     component.minValue = function(_) {
         if (!arguments.length) return _minValue;
         _minValue = _;
@@ -250,6 +262,12 @@ function radialProgress(parent) {
     component.onClick = function (_) {
         if (!arguments.length) return _mouseClick;
         _mouseClick=_;
+        return component;
+    }
+
+    component.innerLabel = function(_) {
+        if (!arguments.length) return this.textContent = "$" + parseFloat((i(t)) / 10).toFixed(2);
+        this.textContent = "$" + parseFloat(_).toFixed(2);
         return component;
     }
 
