@@ -59,6 +59,27 @@ app.get('/daily', function(req, res) {
         });
     })
     .then(function() {
+        var User = Parse.Object.extend("User");
+        var newUserObj = new User();
+        newUserObj.set('objectId', 'ivWt4BYMS0');
+        var totalTransactions = 0;
+        for(var i = 0; i < userTransactions.length; i++) {
+            totalTransactions += userTransactions[i].get('amount');
+        }
+        newUserObj.set('todaysBudget', userObj.get('dailyBudget') - totalTransactions);
+        Parse.Cloud.useMasterKey();
+        return newUserObj.save(null, {
+            success: function(savedUser) {
+                console.log('Saved todays budget');
+            },
+            error: function(erroredTransaction, error) {
+                console.log(error);
+                console.log(erroredTransaction);
+                console.log('Error saving todays budget');
+            }
+        })
+    })
+    .then(function() {
         res.render('daily', { user: userObj, transactions: userTransactions });
     });
 });
@@ -84,6 +105,8 @@ app.post('/spend-save', function(req, res) {
     var query = new Parse.Query(User);
     var userObj;
     var userTransactions;
+    var amountInCents;
+    Parse.Cloud.useMasterKey();
     query.get('ivWt4BYMS0', {
         success: function(user) {
             userObj = user;
@@ -97,7 +120,7 @@ app.post('/spend-save', function(req, res) {
     })
     .then(function() {
         var amount = req.body.amount;
-        var amountInCents = amount * 100;
+        amountInCents = amount * 100;
         var Transaction = Parse.Object.extend("Transactions");
         var cashTrans = new Transaction();
         cashTrans.save({
@@ -106,21 +129,54 @@ app.post('/spend-save', function(req, res) {
             owner: userObj
         }, {
             success: function(savedTransaction) {
-                res.send("0");
+                console.log('Saved transaction')
             },
             error: function(erroredTransaction, error) {
+                console.log('Error saving emergency transactions');
+            }
+        })
+    })
+    .then(function() {
+        var User = Parse.Object.extend("User");
+        var query = new Parse.Query(User);
+        var todaysBudget;
+        query.get('ivWt4BYMS0', {
+            success: function(userObj) {
+                todaysBudget = userObj.get('todaysBudget');
+                console.log('Todays Balance:' + todaysBudget);
+            },
+            error: function() {
+                console.log('Error retrieving todays budget');
                 res.send("-1");
             }
         })
+        .then(function() {
+            var userObj = new User();
+            userObj.set('objectId', 'ivWt4BYMS0');
+            userObj.set('todaysBudget', todaysBudget - amountInCents);
+            Parse.Cloud.useMasterKey();
+            return userObj.save(null, {
+                success: function(savedUser) {
+                    console.log('Saved todays budget');
+                    res.send("0");
+                },
+                error: function(erroredTransaction, error) {
+                    console.log(error);
+                    console.log(erroredTransaction);
+                    console.log('Error saving todays budget');
+                    res.send("-1");
+                }
+            });
+        });
     })
 });
 
 app.post('/spend-save-sms', function(req, res) {
-    console.log(req.body);
     var User = Parse.Object.extend('_User');
     var query = new Parse.Query(User);
     var userObj;
     var userTransactions;
+    Parse.Cloud.useMasterKey();
     query.get('ivWt4BYMS0', {
         success: function(user) {
             userObj = user;
@@ -133,8 +189,8 @@ app.post('/spend-save-sms', function(req, res) {
 
     })
     .then(function() {
-        var amount = req.body.text;
-        var amountInCents = amount * 100;
+        var amount = parseFloat(req.body.text);
+        var amountInCents = Math.round(amount * 100);
         var Transaction = Parse.Object.extend("Transactions");
         var cashTrans = new Transaction();
         return cashTrans.save({
@@ -143,26 +199,38 @@ app.post('/spend-save-sms', function(req, res) {
             owner: userObj
         }, {
             success: function(savedTransaction) {
-                Parse.Cloud.httpRequest({
-                  method: "POST",
-                  url: "https://rest.nexmo.com/sms/json",
-                  body: {
-                     api_key: 'b2d131d2',
-                     api_secret: '7b5388b8',
-                     from: req.body.to,
-                     to: req.body.msidn,
-                     text: "Cash Transaction for $" + amount + " has been recorded.  Bwwraaaak!"
-                  },
-                  success: function(httpResponse) {
-                    console.log(httpResponse.text);
-                  },
-                  error: function(httpResponse) {
-                    console.error('Request failed with response code ' + httpResponse.status);
-                  }
+                userObj.increment('todaysBudget', parseInt(-1 * amountInCents));
+                userObj.save(null, {
+                    success: function(savedUser) {
+                        Parse.Cloud.httpRequest({
+                          method: "POST",
+                          url: "https://rest.nexmo.com/sms/json",
+                          body: {
+                             api_key: 'b2d131d2',
+                             api_secret: '7b5388b8',
+                             from: req.body.to,
+                             to: req.body.msisdn,
+                             text: "Bwraaaak! Cash Transaction for $" + parseFloat(amount).toFixed(2) + " has been recorded.  Your new budget for today is $" + parseFloat(savedUser.get('todaysBudget') / 100).toFixed(2) + '.'
+                          },
+                          success: function(httpResponse) {
+                            console.log(httpResponse.text);
+                            res.send("0");
+                          },
+                          error: function(httpResponse) {
+                            console.error('Request failed with response code ' + httpResponse.status);
+                          }
+                        });
+                    },
+                    error: function(erroredUser, error) {
+                        console.log(erroredUser);
+                        console.log(error);
+                        console.log('Failed to todays budget');
+                    }
                 });
             },
             error: function(erroredTransaction, error) {
                 console.log('Failed to send text to recipient');
+                res.send("-1");
             }
         })
     });
