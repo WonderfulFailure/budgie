@@ -8,6 +8,10 @@
     left: 0;
 }
 
+#div1 {
+    height: 270px;
+}
+
 .btn.btn-teal {
     color: #3ad3dd;
     background-color: #ffffff;

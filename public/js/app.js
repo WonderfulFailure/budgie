@@ -55,16 +55,38 @@ var app = angular.module('budgie', [
     $scope.pageClass = 'page-goal';
 })
 
-.controller('DailyController', function($scope, $routeParams) {
+.controller('DailyController', function($scope, $routeParams, $route, $http) {
     $scope.todaysDate = new Date();
     $scope.pageClass = 'page-daily';
+
+    $http({
+        method  : 'GET',
+        url     : '/transactions'
+    })
+    .success(function(data) {
+        $scope.transactions = data;
+    });
+
+    $http({
+        method  : 'GET',
+        url     : '/user'
+    })
+    .success(function(data) {
+        $scope.user = data;
+        console.log(data);
+        var rp1 = radialProgress(document.getElementById('div1'))
+                .diameter(300)
+                .value(data.todaysBudget)
+                .maxValue(data.dailyBudget)
+                .render();
+    });
 })
 
 .controller('SaveController', function($scope, $routeParams) {
     $scope.pageClass = 'page-save';
 })
 
-.controller('SpendController', function($scope, $routeParams, $http, $location, $window) {
+.controller('SpendController', function($scope, $routeParams, $http, $location, $route, $timeout) {
     $scope.pageClass = 'page-spend';
 
     $scope.amountCents = "";
@@ -98,7 +120,6 @@ var app = angular.module('budgie', [
           console.log('something went wrong');
         } else {
           // if successful, bind success message to message
-          $scope.$apply();
           $location.path('/daily');
         }
       });

@@ -39,7 +39,7 @@ function radialProgress(parent) {
 
     var _value= 0,
         _minValue = 0,
-        _maxValue = 100;
+        _maxValue = 0;
 
     var  _currentArc= 0, _currentArc2= 0, _currentValue=0;
 

@@ -194,7 +194,7 @@ app.post('/spend-save-sms', function(req, res) {
         var Transaction = Parse.Object.extend("Transactions");
         var cashTrans = new Transaction();
         return cashTrans.save({
-            label: 'Cash Purchase',
+            label: 'Cash Purchase (SMS)',
             amount: amountInCents,
             owner: userObj
         }, {
@@ -233,6 +233,31 @@ app.post('/spend-save-sms', function(req, res) {
                 res.send("-1");
             }
         })
+    });
+});
+
+app.get('/transactions', function(req, res) {
+    var Transactions = Parse.Object.extend("Transactions");
+    var User = Parse.Object.extend("User");
+    var query = new Parse.Query(Transactions);
+    var User = new User();
+    User.id = 'ivWt4BYMS0';
+    query.equalTo('owner', User);
+    query.find({
+        success: function(transactions) {
+            res.send(transactions);
+        }
+    });
+});
+
+app.get('/user', function(req, res) {
+    var User = Parse.Object.extend("User");
+    var query = new Parse.Query(User);
+    query.equalTo('objectId', 'ivWt4BYMS0');
+    query.first({
+        success: function(transactions) {
+            res.send(transactions);
+        }
     });
 });
 
