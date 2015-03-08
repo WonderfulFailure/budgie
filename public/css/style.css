@@ -16,6 +16,8 @@
     color: #3ad3dd;
     background-color: #ffffff;
     border: 1px solid #3ad3dd;
+    display:inline-block;
+    width:56px;
 }
 
 .total {
