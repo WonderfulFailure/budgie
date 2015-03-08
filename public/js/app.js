@@ -65,6 +65,13 @@ var app = angular.module('budgie', [
     })
     .success(function(data) {
         $scope.transactions = data;
+        $scope.getTotal = function(){
+            var total = 0;
+            for(var i = 0; i < $scope.transactions.length; i++){
+                total += $scope.transactions[i].amount / 100;
+            }
+            return total;
+        }
     });
 
     $http({
@@ -73,7 +80,6 @@ var app = angular.module('budgie', [
     })
     .success(function(data) {
         $scope.user = data;
-        console.log(data);
         var rp1 = radialProgress(document.getElementById('div1'))
                 .diameter(300)
                 .value(data.todaysBudget)
