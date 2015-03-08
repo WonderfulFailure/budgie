@@ -1,12 +1,20 @@
 <h2 style="font-size: 24px;text-transform: uppercase;font-weight:100;">{{ todaysDate | date : 'EEEE, MMMM d' }}</h2>
-<div id="div1"></div>
-<ul id="transactions">
+<div id="div1" style="margin:30px 0 0 0"></div>
+<ul id="transactions" class="list-unstyled clearfix" style="font-weight:200;width:60%;margin:30px auto 0 auto" >
     <% var total = 0; %>
     <% for(var i=0; i < transactions.length; i++) { %>
-    <li><%= transactions[i].get("label") %> - $<%= parseFloat(transactions[i].get("amount") / 100).toFixed(2) %></li>
+    <li>
+    	<div class="row-fluid">
+    		<div class="col-xs-8 text-left"><%= transactions[i].get("label") %></div> 
+    		<div class="col-xs-4 text-right">$<%= parseFloat(transactions[i].get("amount") / 100).toFixed(2) %></div>
+		</div>
+	</li>
     <% total = total + transactions[i].get("amount"); %>
     <% } %>
-    <li class="total">Total purchases - $<%= parseFloat(total / 100).toFixed(2) %></li>
+    <li class="total row-fluid">
+    	<div class="col-xs-8 text-left">Total purchases</div>
+    	<div class="col-xs-4 text-right">$<%= parseFloat(total / 100).toFixed(2) %></div>
+	</li>
 </ul>
 <a href="#/buckets" class="btn btn-lg btn-primary">Save</a>
 <a href="#/spend" class="btn btn-lg btn-primary">Spend</a>
