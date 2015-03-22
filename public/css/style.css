@@ -9,7 +9,7 @@
 }
 
 #div1 {
-    height: 270px;
+    height: 230px;
 }
 
 #div2,
@@ -40,7 +40,7 @@
 .big-input {
     font-size: 56px;
     font-weight: 100;
-    padding: 0 50px;
+    padding: 0 30px;
 }
 
 .big-input input {
@@ -104,6 +104,11 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 
 .page-premium img {
     width: 100%;
+}
+
+.settings-link {
+    display: inline-block;
+    margin-top: 10px;
 }
 
 /* slide up from bottom */
