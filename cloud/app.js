@@ -2,25 +2,76 @@
 // These two lines are required to initialize Express in Cloud Code.
 var express = require('express');
 var app = express();
+var parseExpressCookieSession = require('parse-express-cookie-session');
+var parseExpressHttpsRedirect = require('parse-express-https-redirect');
 
 // Global app configuration section
 app.set('views', 'cloud/views');  // Specify the folder to find templates
 app.set('view engine', 'ejs');    // Set the template engine
 app.use(express.bodyParser());    // Middleware for reading request body
+app.use(express.methodOverride());
+app.use(express.cookieParser('SECRET_SIGNING_KEY'));
+app.use(parseExpressCookieSession({
+  fetchUser: true,
+  key: 'budgie.sess',
+  cookie: {
+    maxAge: 3600000 * 24 * 30
+  }
+}));
 
-// This is an example of hooking up a request handler with a specific request
-// path and HTTP verb using the Express routing API.
-
+/*
+    =====
+    Pages
+    =====
+ */
 app.get('/', function(req, res) {
   res.render('index');
 });
 
-app.get('/home', function(req, res) {
-  res.render('home');
+app.get('/signup', function(req, res) {
+  res.render('signup');
 });
 
-app.get('/budget', function(req, res) {
-    res.render('budget');
+app.post('/signup', function(req, res) {
+    var username = req.body.username;
+    var password = req.body.password;
+
+    var user = new Parse.User();
+    user.set('username', username);
+    user.set('password', password);
+    user.set('monthlyBudget', 0);
+    user.set('dailyBudget', 0);
+    user.set('todaysBudget', 0);
+    user.set('lastDailyBudgetUpdate', new Date());
+
+    user.signUp().then(function(user) {
+      res.redirect('/');
+    }, function(error) {
+      // Show the error message and let the user try again
+      res.render('signup', { flash: error.message });
+    });
+});
+
+app.get('/login', function(req, res) {
+    res.render('login');
+});
+
+app.post('/login', function(req, res) {
+    Parse.User.logIn(req.body.username, req.body.password).then(function(user) {
+        res.send({"code": 0, "message": "Successfully logged in"});
+    }, function(error) {
+        res.send({"code": error.code, "message": error.message});
+    });
+});
+
+app.get('/logout', function(req, res) {
+    Parse.User.logOut();
+    res.redirect('/');
+});
+
+app.post('/logout', function(req, res) {
+    Parse.User.logOut();
+    res.send({"code": 0, "message": "Successfully logged out"});
 });
 
 app.get('/buckets', function(req, res) {
@@ -28,147 +79,158 @@ app.get('/buckets', function(req, res) {
 });
 
 app.get('/daily', function(req, res) {
-  var User = Parse.Object.extend('_User');
-    var query = new Parse.Query(User);
-    var userObj;
-    var userTransactions;
-    query.get('ivWt4BYMS0', {
-        success: function(user) {
-            console.log(user);
-            userObj = user;
-        },
-
-        error: function(object, error) {
-            // Error yo
-            console.log(error);
-        }
-
-    })
-    .then(function() {
-        var Transactions = Parse.Object.extend('Transactions');
-        var query = new Parse.Query(Transactions);
-        query.equalTo('owner', userObj);
-        return query.find({
-          success: function(results) {
-            userTransactions = results;
-            console.log(results);
-          },
-          error: function(error) {
-            alert("Error: " + error.code + " " + error.message);
-          }
-        });
-    })/*
-    .then(function() {
-        var User = Parse.Object.extend("User");
-        var newUserObj = new User();
-        newUserObj.set('objectId', 'ivWt4BYMS0');
-        var totalTransactions = 0;
-        for(var i = 0; i < userTransactions.length; i++) {
-            totalTransactions += userTransactions[i].get('amount');
-        }
-        newUserObj.set('todaysBudget', userObj.get('dailyBudget') - totalTransactions);
-        Parse.Cloud.useMasterKey();
-        return newUserObj.save(null, {
-            success: function(savedUser) {
-                console.log('Saved todays budget');
-            },
-            error: function(erroredTransaction, error) {
-                console.log(error);
-                console.log(erroredTransaction);
-                console.log('Error saving todays budget');
-            }
-        })
-    })*/
-    .then(function() {
-        res.render('daily', { user: userObj, transactions: userTransactions });
-    });
-});
-
-app.get('/goal', function(req, res) {
-  res.render('goal');
+    res.render('daily');
 });
 
 app.get('/spend', function(req, res) {
   res.render('spend');
 });
 
-app.get('/save', function(req, res) {
-  res.render('save');
-});
-
 app.get('/settings', function(req, res) {
   res.render('settings');
 });
 
-app.post('/spend-save', function(req, res) {
-    var User = Parse.Object.extend('_User');
-    var query = new Parse.Query(User);
-    var userObj;
-    var userTransactions;
-    var amountInCents;
-    Parse.Cloud.useMasterKey();
-    query.get('ivWt4BYMS0', {
-        success: function(user) {
-            userObj = user;
-        },
+app.get('/premium', function(req, res) {
+  res.render('premium');
+});
 
-        error: function(object, error) {
-            // Error yo
-            console.log(error);
-        }
+/*
+    =============
+    API endpoints
+    =============
+*/
 
-    })
-    .then(function() {
-        var amount = req.body.amount;
-        amountInCents = amount * 100;
-        var Transaction = Parse.Object.extend("Transactions");
-        var cashTrans = new Transaction();
-        cashTrans.save({
-            label: 'Cash via app',
-            amount: amountInCents,
-            owner: userObj
-        }, {
-            success: function(savedTransaction) {
-                console.log('Saved transaction')
-            },
-            error: function(erroredTransaction, error) {
-                console.log('Error saving emergency transactions');
-            }
-        })
-    })
-    .then(function() {
-        var User = Parse.Object.extend("User");
-        var query = new Parse.Query(User);
-        var todaysBudget;
-        query.get('ivWt4BYMS0', {
-            success: function(userObj) {
-                todaysBudget = userObj.get('todaysBudget');
-                console.log('Todays Balance:' + todaysBudget);
-            },
-            error: function() {
-                console.log('Error retrieving todays budget');
-                res.send("-1");
-            }
-        })
-        .then(function() {
-            var userObj = new User();
-            userObj.set('objectId', 'ivWt4BYMS0');
-            userObj.set('todaysBudget', todaysBudget - amountInCents);
-            Parse.Cloud.useMasterKey();
-            return userObj.save(null, {
-                success: function(savedUser) {
-                    console.log('Saved todays budget');
-                    res.send("0");
-                },
-                error: function(erroredTransaction, error) {
-                    console.log(error);
-                    console.log(erroredTransaction);
-                    console.log('Error saving todays budget');
-                    res.send("-1");
-                }
-            });
+app.get('/2/transactions', function(req, res) {
+    var currentUser = Parse.User.current();
+    if (currentUser) {
+        Parse.Cloud.run('GetUserTransactions', {}, {
+          success: function(result) {
+            res.send(result);
+          },
+          error: function(error) {
+            res.send(error);
+          }
         });
-    })
+    } else {
+        res.send({ "error": "Must be logged in", "code": "-1"});
+    }
+});
+
+app.post('/2/transactions', function(req, res) {
+    var currentUser = Parse.User.current();
+    if (currentUser) {
+        Parse.Cloud.run('AddTransaction', {"amount": req.body.amount}, {
+          success: function(result) {
+            res.send(result);
+          },
+          error: function(error) {
+            res.send(error);
+          }
+        });
+    } else {
+        res.send({ "error": "Must be logged in", "code": "-1"});
+    }
+});
+
+app.get('/2/buckets', function(req, res) {
+    var currentUser = Parse.User.current();
+    if (currentUser) {
+        Parse.Cloud.run('GetUserBuckets', {}, {
+          success: function(result) {
+            res.send(result);
+          },
+          error: function(error) {
+            res.send(error);
+          }
+        });
+    } else {
+        res.send({ "error": "Must be logged in", "code": "-1"});
+    }
+});
+
+app.post('/2/buckets', function(req, res) {
+    var currentUser = Parse.User.current();
+    if(currentUser) {
+        Parse.Cloud.run('AddBucketContribution', {"amount": req.body.amount}, {
+            success: function(result) {
+                res.send(result);
+            },
+            error: function(error) {
+                res.send(error);
+            }
+        });
+    } else {
+        res.send({ "error": "Must be logged in", "code": "-1" });
+    }
+});
+
+app.get('/2/balance', function(req, res) {
+    var currentUser = Parse.User.current();
+    if (currentUser) {
+        Parse.Cloud.run('CalculateDailyBalance', {}, {
+            success: function(result) {
+                res.send({"daily": currentUser.get('dailyBudget'), "today": result.today});
+            },
+            error: function(error) {
+                res.send(error);
+            }
+        });
+    } else {
+        res.send({ "error": "Must be logged in", "code": "-1"});
+    }
+});
+
+app.get('/2/settings', function(req, res) {
+    var currentUser = Parse.User.current();
+    if (currentUser) {
+        Parse.Cloud.run('GetUserBuckets', {}, {
+            success: function(result) {
+                res.send({"monthlyBudget": currentUser.get('monthlyBudget'), "bucketName": result.get('title'), "bucketGoal": result.get('goal')});
+            },
+            error: function(error) {
+                res.send(error);
+            }
+        });
+    } else {
+        res.send({ "error": "Must be logged in", "code": "-1"});
+    }
+});
+
+app.post('/2/settings', function(req, res) {
+    var currentUser = Parse.User.current();
+    if(currentUser) {
+        currentUser.set('monthlyBudget', parseInt(req.body.monthlyBudget));
+        currentUser.set('dailyBudget', parseInt(req.body.monthlyBudget / 30));
+        currentUser.save(null, {
+            success: function(result) {
+                var Buckets = Parse.Object.extend('Buckets');
+                var query = new Parse.Query(Buckets);
+                query.equalTo('owner', currentUser);
+                query.first({
+                  success: function(Bucket) {
+                    Bucket.set('title', req.body.bucketName);
+                    Bucket.set('goal', parseInt(req.body.bucketGoal));
+                    Bucket.save(null, {
+                        success: function() {
+                            res.send({'code': 0, 'message': 'Settings saved successfully'});
+                        },
+                        error: function(error) {
+                            res.send({ "error": error.message, "code": error.code });
+                        }
+                    });
+                  },
+                  error: function(error) {
+                    res.send({ "error": error.message, "code": error.code });
+                  }
+                });
+            },
+            error: function(error) {
+                res.send(error);
+            }
+        });
+    } else {
+        res.send({ "error": "Must be logged in", "code": "-1" });
+    }
 });
 
 app.post('/spend-save-sms', function(req, res) {
@@ -206,7 +268,7 @@ app.post('/spend-save-sms', function(req, res) {
                           },
                           success: function(httpResponse) {
                             console.log(httpResponse.text);
-                            res.send("0");
+                            res.send(0);
                           },
                           error: function(httpResponse) {
                             console.error('Request failed with response code ' + httpResponse.status);
@@ -234,7 +296,7 @@ app.post('/spend-save-sms', function(req, res) {
                           },
                           success: function(httpResponse) {
                             console.log(httpResponse.text);
-                            res.send("0");
+                            res.send(0);
                           },
                           error: function(httpResponse) {
                             console.error('Request failed with response code ' + httpResponse.status);
@@ -256,137 +318,146 @@ app.post('/spend-save-sms', function(req, res) {
     });
 });
 
-app.get('/transactions', function(req, res) {
-    var Transactions = Parse.Object.extend("Transactions");
-    var User = Parse.Object.extend("User");
+/*
+    ===============
+    Cloud Functions
+    ===============
+ */
+
+Parse.Cloud.define("GetUserTransactions", function(request, response) {
+    var Transactions = Parse.Object.extend('Transactions');
     var query = new Parse.Query(Transactions);
-    var User = new User();
-    User.id = 'ivWt4BYMS0';
-    query.equalTo('owner', User);
+    var today = new Date();
+    today = today.setHours(0,0,0,0);
+    console.log(today);
+    query.equalTo('owner', request.user);
     query.limit(8);
-    query.ascending("updatedAt");
+    query.descending("createdAt");
+    query.greaterThanOrEqualTo("createdAt", today);
     query.find({
-        success: function(transactions) {
-            res.send(transactions);
-        }
+      success: function(results) {
+        response.success(results);
+      },
+      error: function(error) {
+        response.error(error.message);
+      }
     });
 });
 
-app.get('/user', function(req, res) {
-    var User = Parse.Object.extend("User");
-    var query = new Parse.Query(User);
-    query.equalTo('objectId', 'ivWt4BYMS0');
-    query.first({
-        success: function(transactions) {
-            res.send(transactions);
-        }
-    });
-});
+Parse.Cloud.define("AddTransaction", function(request, response) {
+    var Transaction = Parse.Object.extend("Transactions");
+    var cashTrans = new Transaction();
 
-app.get('/bucket-list', function(req, res) {
-    var Buckets = Parse.Object.extend("Buckets");
-    var User = Parse.Object.extend("User");
-    var query = new Parse.Query(Buckets);
-    var User = new User();
-    User.id = 'ivWt4BYMS0';
-    query.equalTo('owner', User);
-    query.first({
-        success: function(transactions) {
-            res.send(transactions);
-        }
-    });
-});
+    var amount = request.params.amount;
+    var amountInCents = amount * 100;
+    var label = 'Cash via app';
+    if(request.params.label) label = request.params.label;
 
-app.post('/bucket-save', function(req, res) {
-    var Buckets = Parse.Object.extend("Buckets");
-    var User = Parse.Object.extend("_User");
-    var query = new Parse.Query(User);
-    var userObj;
-    var amount = req.body.amount;
-    var bucketObj;
-    Parse.Cloud.useMasterKey();
-    query.get('ivWt4BYMS0', {
-        success: function(user) {
-            userObj = user;
-            //res.send("0");
+    cashTrans.save({
+        label: label,
+        amount: amountInCents,
+        owner: request.user
+    }, {
+        success: function(savedTransaction) {
+            response.success({ "code": 0, "message": "Saved transaction successfully"});
         },
-
-        error: function(object, error) {
-            // Error yo
-            res.send("-1");
+        error: function(erroredTransaction, error) {
+            response.error({ "error": error.message, "code": error.code });
         }
+    });
+});
 
-    })
-    .then(function() {
-        query2 = new Parse.Query(Buckets);
-        query2.equalTo('owner', userObj);
-        return query2.first({
-            success: function(bucket) {
-                bucketObj = bucket;
-                bucket.set('progress', parseInt(amount) + parseInt(bucket.get('progress')));
-                bucket.save(null, {
-                    success: function() {
-                        //res.send("0");
-                    },
-                    error: function(erroredBucket, error) {
-                        res.send("-1");
-                    }
+Parse.Cloud.afterSave("Transactions", function(request) {
+    var currentUser = Parse.User.current();
+
+    // Only update if there is a transaction to update
+    if(request.object) {
+        var currentUser = request.user;
+        var amountInCents = request.object.get('amount');
+        currentUser.increment('todaysBudget', -amountInCents);
+        currentUser.save(null, {
+            success: function(result) {
+            },
+            error: function(errorUser, error) {
+                console.error(error);
+            }
+        })
+    }
+});
+
+Parse.Cloud.define("GetUserBuckets", function(request, response) {
+    var Buckets = Parse.Object.extend('Buckets');
+    var query = new Parse.Query(Buckets);
+    query.equalTo('owner', request.user);
+    query.first({
+      success: function(results) {
+        response.success(results);
+      },
+      error: function(error) {
+        response.error({ "error": error.message, "code": error.code });
+      }
+    });
+});
+
+Parse.Cloud.define("AddBucketContribution", function(request, response) {
+    var Buckets = Parse.Object.extend('Buckets');
+    var query = new Parse.Query(Buckets);
+    var amount = request.params.amount;
+    var amountInCents = amount * 100;
+
+    query.equalTo('owner', request.user);
+    query.first({
+      success: function(Bucket) {
+        Bucket.increment('progress', amountInCents);
+        Bucket.save(null, {
+            success: function() {
+                Parse.Cloud.run('AddTransaction', {"amount": amount, "label": Bucket.get('title')}, {
+                  success: function(result) {
+                    response.success({ "message": "Saved bucket contribution successfully" });
+                  },
+                  error: function(error, errorDetails) {
+                    response.error(errorDetails.message);
+                  }
                 });
             },
-            error: function(bucketError, error) {
-                res.send("-1");
+            error: function(error, errorDetails) {
+                response.error(errorDetails.message);
             }
-        });
-    })
-    .then(function() {
-        var Transaction = Parse.Object.extend("Transactions");
-        var bucketTrans = new Transaction();
-        return bucketTrans.save({
-            label: bucketObj.get('title'),
-            amount: parseInt(amount),
-            owner: userObj
-        }, {
-            success: function(savedTrans) {
-                res.send("0");
-            },
-            error: function(object, error) {
-                res.send(error);
-            }
-        });
-    })
-    .then(function() {
-        userObj.set('todaysBudget', userObj.get('todaysBudget') - amount);
-        Parse.Cloud.useMasterKey();
-        return userObj.save(null, {
-            success: function(savedUser) {
-                console.log('Saved todays budget');
-                res.send("0");
-            },
-            error: function(erroredTransaction, error) {
-                console.log(error);
-                console.log(erroredTransaction);
-                console.log('Error saving todays budget');
-                res.send(error);
-            }
-        });
+        })
+      },
+      error: function(error, errorDetails) {
+        response.error(errorDetails.message);
+      }
     });
 });
 
-app.get('/premium', function(req, res) {
-  res.render('premium');
+Parse.Cloud.define("CalculateDailyBalance", function(request, response) {
+    var currentUser = Parse.User.current();
+    var oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds
+    var lastUpdate = new Date(currentUser.get('lastDailyBudgetUpdate'));
+    var today = new Date();
+    var diffDays = Math.round(Math.abs((lastUpdate.getTime() - today.getTime())/(oneDay)));
+
+    // Only change the balance if it's been more than 24h
+    if(diffDays > 0) {
+        var dailyBudget = currentUser.get('dailyBudget');
+
+        currentUser.increment('todaysBudget', dailyBudget * diffDays);
+        currentUser.set('lastDailyBudgetUpdate', today);
+        currentUser.save(null, {
+            success: function(result) {
+                response.success({"code": 0, "today": result.get('todaysBudget')});
+            },
+            error: function(error, errorDetails) {
+                response.error(errorDetails.message);
+            }
+        });
+    }
+    else {
+        response.success({"code": 0, "today": currentUser.get('todaysBudget')});
+    }
 });
 
-// // Example reading from the request query string of an HTTP get request.
-// app.get('/test', function(req, res) {
-//   // GET http://example.parseapp.com/test?message=hello
-//   res.send(req.query.message);
-// });
 
-// // Example reading from the request body of an HTTP post request.
-// app.post('/test', function(req, res) {
-//   // POST http://example.parseapp.com/test (with request body "message=hello")
-//   res.send(req.body.message);
-// });
-
-// Attach the Express app to Cloud Code.
+/* Hey!  Listen! */
 app.listen();

@@ -1,3 +1,21 @@
-<h1>Settings Page</h1>
-<a href="#" ng-click="clickme($event)">Click Me</a>
-<a href="#/daily">Go to Daily</a>
+<h2>Settings</h2>
+<p class="text-muted">All amounts are in whole dollars. (e.g. $3.14)</p>
+
+    <div class="col-md-12">
+        <form ng-submit="submitSettings()">
+            <div class="form-group">
+                <label class="form-label" for="monthlyBudget">Monthly Budget</label>
+                <input type="text" placeholder="00.00" id="monthlyBudget" ng-model="monthlyBudget" class="form-control input-lg" />
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="bucketName">Goal Title</label>
+                <input type="text" placeholder="Taylor Swift Concert" id="bucketName" ng-model="bucketName" class="form-control input-lg" />
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="bucketGoal">Goal Value</label>
+                <input type="text" placeholder="00.00" id="bucketGoal" ng-model="bucketGoal" class="form-control input-lg" />
+            </div>
+            <input type="submit" class="btn btn-primary" value="Save Settings" />
+            <a href="#/daily" class="btn btn-default">Bail</a>
+        </form>
+    </div>

@@ -8,10 +8,6 @@ var app = angular.module('budgie', [
 .config(['$routeProvider', '$httpProvider', '$locationProvider', function($routeProvider, $httpProvider, $locationProvider) {
     $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
     $routeProvider
-        .when('/budget', {
-            templateUrl: '/budget',
-            controller: 'BudgetController'
-        })
         .when('/buckets', {
             templateUrl: '/buckets',
             controller: 'BucketsController'
@@ -19,22 +15,10 @@ var app = angular.module('budgie', [
         .when('/daily', {
             templateUrl: '/daily',
             controller: 'DailyController'
-
-        })
-        .when('/goal', {
-            templateUrl: '/goal',
-            controller: 'GoalController'
-
         })
         .when('/spend', {
             templateUrl: '/spend',
             controller: 'SpendController'
-
-        })
-        .when('/save', {
-            templateUrl: '/save',
-            controller: 'SaveController'
-
         })
         .when('/settings', {
             templateUrl: '/settings',
@@ -44,56 +28,106 @@ var app = angular.module('budgie', [
             templateUrl: '/premium',
             controller: 'PremiumController'
         })
+        .when('/login', {
+            templateUrl: '/login',
+            controller: 'LoginController'
+        })
+        .when('/signup', {
+            templateUrl: '/signup'
+        })
         .otherwise({redirectTo: '/daily'});
 }])
 
-.controller('BudgetController', function($scope, $routeParams) {
-    $scope.pageClass = 'page-budget';
+.controller('LoginController', function($scope, $routeParams, $http, $location) {
+    $scope.login = function() {
+        $http({
+          method  : 'POST',
+          url     : '/login',
+          data    : 'username=' + $scope.username + "&password=" + $scope.password,  // pass in data as strings
+          headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
+        })
+      .success(function(response, status) {
+        if(!response.error && status == 200) {
+            $location.path('/daily');
+        }
+      });
+    }
 })
 
-.controller('SettingsController', function($scope, $routeParams) {
+.controller('SettingsController', function($scope, $routeParams, $http, $location) {
     $scope.pageClass = 'page-settings';
+
+    $http({
+          method  : 'GET',
+          url     : '/2/settings',
+        })
+      .success(function(response, status) {
+        if(!response.error && status == 200) {
+            $scope.monthlyBudget = parseFloat(response.monthlyBudget / 100).toFixed(2);
+            $scope.bucketName = response.bucketName;
+            $scope.bucketGoal = parseFloat(response.bucketGoal / 100).toFixed(2);
+        }
+      });
+
+    $scope.submitSettings = function() {
+        var monthlyBudgetInCents = $scope.monthlyBudget * 100;
+        var bucketGoalInCents = $scope.bucketGoal * 100;
+        $http({
+          method  : 'POST',
+          url     : '/2/settings',
+          data    : 'monthlyBudget=' + monthlyBudgetInCents + "&bucketName=" + $scope.bucketName + "&bucketGoal=" + bucketGoalInCents,  // pass in data as strings
+          headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
+        })
+      .success(function(response, status) {
+        if(!response.error && status == 200) {
+            $location.path('/daily');
+        }
+      });
+    }
 })
 
-.controller('GoalController', function($scope, $routeParams) {
-    $scope.pageClass = 'page-goal';
-})
-
-.controller('DailyController', function($scope, $routeParams, $route, $http) {
+.controller('DailyController', function($scope, $routeParams, $route, $http, $location) {
     $scope.todaysDate = new Date();
     $scope.pageClass = 'page-daily';
 
     $http({
         method  : 'GET',
-        url     : '/transactions'
+        url     : '/2/transactions'
     })
     .success(function(data) {
-        $scope.transactions = data;
-        $scope.getTotal = function(){
-            var total = 0;
-            for(var i = 0; i < $scope.transactions.length; i++){
-                total += $scope.transactions[i].amount / 100;
+        if(!data.error) {
+            $scope.transactions = data;
+            $scope.getTotal = function(){
+                var total = 0;
+                for(var i = 0; i < $scope.transactions.length; i++){
+                    total += $scope.transactions[i].amount / 100;
+                }
+                return total;
             }
-            return total;
         }
-    });
-
-    $http({
-        method  : 'GET',
-        url     : '/user'
+        else {
+            $location.path('/login');
+        }
     })
-    .success(function(data) {
-        $scope.user = data;
-        var rp1 = radialProgress(document.getElementById('div1'))
-                .diameter(300)
-                .value(data.todaysBudget)
-                .maxValue(data.dailyBudget)
-                .render();
+    .then(function() {
+        return $http({
+            method  : 'GET',
+            url     : '/2/balance'
+        })
+        .success(function(data) {
+            if(!data.error) {
+                $scope.user = data;
+                var rp1 = radialProgress(document.getElementById('div1'))
+                        .diameter(300)
+                        .value(data.today)
+                        .maxValue(data.daily)
+                        .render();
+            }
+            else {
+                $location.path('/login');
+            }
+        });
     });
-})
-
-.controller('SaveController', function($scope, $routeParams) {
-    $scope.pageClass = 'page-save';
 })
 
 .controller('SpendController', function($scope, $routeParams, $http, $location, $route, $timeout) {
@@ -118,17 +152,13 @@ var app = angular.module('budgie', [
     $scope.processForm = function() {
         $http({
           method  : 'POST',
-          url     : '/spend-save',
+          url     : '/2/transactions',
           data    : 'amount=' + $scope.amount,  // pass in data as strings
           headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
-      .success(function(data) {
-        if (data != 0) {
-          // if not successful, bind errors to error variables
-          console.log('something went wrong');
-        } else {
-          // if successful, bind success message to message
-          $location.path('/daily');
+      .success(function(response, status) {
+        if(!response.error && status == 200) {
+            $location.path('/daily');
         }
       });
     }
@@ -148,11 +178,11 @@ var app = angular.module('budgie', [
 
     $http({
         method  : 'GET',
-        url     : '/user'
+        url     : '/2/balance'
     })
     .success(function(data) {
-        dailyBudget = data.dailyBudget;
-        remainingBudget = data.todaysBudget;
+        dailyBudget = data.daily;
+        remainingBudget = data.today;
         newBudget = remainingBudget;
 
         $scope.remainingBudget = remainingBudget;
@@ -160,27 +190,32 @@ var app = angular.module('budgie', [
     .then(function() {
         return $http({
             method  : 'GET',
-            url     : '/bucket-list'
+            url     : '/2/buckets'
         })
         .success(function(data) {
-            contributedToBucket = data.progress;
-            newContribution = contributedToBucket;
-            bucketGoal = data.goal;
+            if(!data.error) {
+                contributedToBucket = data.progress;
+                newContribution = contributedToBucket;
+                bucketGoal = data.goal;
 
-            $scope.contributedToBucket = contributedToBucket;
-            $scope.bucketName = data.title;
+                $scope.contributedToBucket = contributedToBucket;
+                $scope.bucketName = data.title;
 
-            var rp1 = radialProgressSmall(document.getElementById('div3'))
-                    .diameter(150)
-                    .value(contributedToBucket)
-                    .maxValue(bucketGoal)
-                    .render();
-            var rp2 = radialProgressSmall(document.getElementById('div2'))
-                    .diameter(150)
-                    .value(remainingBudget)
-                    .maxValue(dailyBudget)
-                    .innerLabel(remainingBudget)
-                    .render();
+                var rp1 = radialProgressSmall(document.getElementById('div3'))
+                        .diameter(150)
+                        .value(contributedToBucket)
+                        .maxValue(bucketGoal)
+                        .render();
+                var rp2 = radialProgressSmall(document.getElementById('div2'))
+                        .diameter(150)
+                        .value(remainingBudget)
+                        .maxValue(dailyBudget)
+                        .innerLabel(remainingBudget)
+                        .render();
+            }
+            else {
+                $location.path('/login');
+            }
         });
     });
 
@@ -206,17 +241,13 @@ var app = angular.module('budgie', [
     $scope.processForm = function() {
         $http({
           method  : 'POST',
-          url     : '/bucket-save',
-          data    : 'amount=' + $scope.amount,  // pass in data as strings
+          url     : '/2/buckets',
+          data    : 'amount=' + $scope.amount / 100,  // pass in data as strings
           headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
         })
-      .success(function(data) {
-        if (data != 0) {
-          // if not successful, bind errors to error variables
-          console.log('something went wrong');
-        } else {
-          // if successful, bind success message to message
-          $location.path('/daily');
+      .success(function(response, status) {
+        if(status == 200) {
+            $location.path('/daily');
         }
       });
     }
