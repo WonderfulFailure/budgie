@@ -4,7 +4,7 @@
 <!-- <a href="#/premium" id="premium-btn" class="btn btn-xs btn-default btn-gold">Premium</a>
  -->
 <ul id="transactions" class="list-unstyled clearfix" style="font-weight:200;width:60%;margin:30px auto 30px auto" >
-    <li ng-repeat="transaction in transactions">
+    <li ng-repeat="transaction in transactions.slice().reverse()">
     	<div class="row-fluid">
     		<div class="col-xs-8 text-left">{{ transaction.label }}</div>
     		<div class="col-xs-4 text-right">${{ transaction.amount / 100 | number:2 }}</div>

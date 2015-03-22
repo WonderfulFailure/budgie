@@ -328,7 +328,7 @@ Parse.Cloud.define("GetUserTransactions", function(request, response) {
     var Transactions = Parse.Object.extend('Transactions');
     var query = new Parse.Query(Transactions);
     var today = new Date();
-    today = today.setHours(0,0,0,0);
+    today.setHours(0,0,0,0);
     console.log(today);
     query.equalTo('owner', request.user);
     query.limit(8);
