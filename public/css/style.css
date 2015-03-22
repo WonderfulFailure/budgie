@@ -40,12 +40,12 @@
 .big-input {
     font-size: 56px;
     font-weight: 100;
-    padding: 0 30px;
+    padding: 0 10px;
 }
 
 .big-input input {
     border:none;
-    width:82%;
+    width: 70%;
     text-align: right;
 }
 
