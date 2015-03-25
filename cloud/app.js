@@ -52,7 +52,6 @@ app.post('/signup', function(req, res) {
     user.set('monthlyBudget', 0);
     user.set('dailyBudget', 0);
     user.set('todaysBudget', 0);
-    user.set('lastDailyBudgetUpdate', new Date());
 
     user.signUp().then(function(user) {
         var Buckets = Parse.Object.extend("Buckets");
@@ -110,8 +109,8 @@ app.get('/settings', function(req, res) {
   res.render('settings');
 });
 
-app.get('/premium', function(req, res) {
-  res.render('premium');
+app.get('/welcome', function(req, res) {
+  res.render('welcome');
 });
 
 /*
@@ -351,7 +350,9 @@ Parse.Cloud.define("GetUserTransactions", function(request, response) {
     var Transactions = Parse.Object.extend('Transactions');
     var query = new Parse.Query(Transactions);
     var today = new Date();
+    console.log(today);
     today.setHours(0,0,0,0);
+    console.log(today);
     query.equalTo('owner', request.user);
     query.limit(8);
     query.descending("createdAt");
@@ -457,7 +458,9 @@ Parse.Cloud.define("CalculateDailyBalance", function(request, response) {
     var currentUser = Parse.User.current();
     var oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds
     var lastUpdate = new Date(currentUser.get('lastDailyBudgetUpdate'));
+    lastUpdate.setHours(0,0,0,0);
     var today = new Date();
+    today.setHours(0,0,0,0);
     var diffDays = Math.round(Math.abs((lastUpdate.getTime() - today.getTime())/(oneDay)));
 
     // Only change the balance if it's been more than 24h

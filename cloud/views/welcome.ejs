@@ -1,0 +1,23 @@
+<h2>Welcome to Budgie <span class="badge">ALPHA</span></h2>
+
+<p>Welcome to Budgie!  Before we get started, we just need to know what your spending habits are like.  We'll get you set up with a daily budget from there!</p>
+
+<form ng-submit="processForm()">
+    <div class="btn-group" data-toggle="buttons">
+      <label class="btn btn-primary active">
+        <input type="radio" name="spending_habits" id="option1" autocomplete="off" ng-model="spendingHabits">Frugal
+      </label>
+      <label class="btn btn-primary">
+        <input type="radio" name="spending_habits" id="option2" autocomplete="off" checked ng-model="spendingHabits">Moderate
+      </label>
+      <label class="btn btn-primary">
+        <input type="radio" name="spending_habits" id="option3" autocomplete="off" ng-model="spendingHabits">Lavish
+      </label>
+    </div>
+
+    <a data-toggle="collapse" href="#customBudgetCollapse" aria-expanded="false" aria-controls="customBudgetCollapse">or custom</a>
+    <div class="collapse" id="customBudgetCollapse">
+      <input type="tel" class="" placeholder="00.00" ng-keyup="updateDollars($event)" ng-model="customBudgetAmount" >
+    </div>
+    <input type="submit" class="btn btn-teal btn-lg" value="Start Saving"/>
+</form>

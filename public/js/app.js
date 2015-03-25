@@ -33,29 +33,62 @@ var app = angular.module('budgie', [
             controller: 'LoginController'
         })
         .when('/signup', {
-            templateUrl: '/signup'
+            templateUrl: '/signup',
+            controller: 'SignUpController'
+        })
+        .when('/welcome', {
+            templateUrl: '/welcome'
         })
         .otherwise({redirectTo: '/daily'});
 }])
 
 .controller('LoginController', function($scope, $routeParams, $http, $location) {
-    $scope.login = function() {
-        $http({
-          method  : 'POST',
-          url     : '/login',
-          data    : 'username=' + $scope.username + "&password=" + $scope.password,  // pass in data as strings
-          headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
-        })
-      .success(function(response, status) {
-        if(!response.error && status == 200) {
-            $location.path('/daily');
+    $scope.processLogin = function() {
+        if($scope.login.$valid) {
+            $http({
+              method  : 'POST',
+              url     : '/login',
+              data    : 'username=' + $scope.username + "&password=" + $scope.password,  // pass in data as strings
+              headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
+            })
+          .success(function(response, status) {
+            if(response.code == 0 && status == 200) {
+                $location.path('/daily');
+            }
+            else {
+                $scope.error = response.message;
+            }
+          });
         }
-      });
     }
+})
+
+.controller('SignUpController', function($scope, $routeParams, $http, $location) {
+
+    $scope.processSignup = function() {
+        if($scope.signup.$valid) {
+            $http({
+              method  : 'POST',
+              url     : '/signup',
+              data    : 'username=' + $scope.username + "&password=" + $scope.password,  // pass in data as strings
+              headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
+            })
+          .success(function(response, status) {
+            if(response.code == 0 && status == 200) {
+                $location.path('/daily');
+            }
+            else {
+                $scope.submitError = response.message;
+            }
+          });
+        }
+    }
+
 })
 
 .controller('SettingsController', function($scope, $routeParams, $http, $location) {
     $scope.pageClass = 'page-settings';
+    $scope.error = '';
 
     $http({
           method  : 'GET',
@@ -70,19 +103,22 @@ var app = angular.module('budgie', [
       });
 
     $scope.submitSettings = function() {
-        var monthlyBudgetInCents = $scope.monthlyBudget * 100;
-        var bucketGoalInCents = $scope.bucketGoal * 100;
-        $http({
-          method  : 'POST',
-          url     : '/2/settings',
-          data    : 'monthlyBudget=' + monthlyBudgetInCents + "&bucketName=" + $scope.bucketName + "&bucketGoal=" + bucketGoalInCents,  // pass in data as strings
-          headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
-        })
-      .success(function(response, status) {
-        if(!response.error && status == 200) {
-            $location.path('/daily');
-        }
-      });
+        if($scope.settings.$valid) {
+            var monthlyBudgetInCents = $scope.monthlyBudget * 100;
+            var bucketGoalInCents = $scope.bucketGoal * 100;
+
+            $http({
+              method  : 'POST',
+              url     : '/2/settings',
+              data    : 'monthlyBudget=' + monthlyBudgetInCents + "&bucketName=" + $scope.bucketName + "&bucketGoal=" + bucketGoalInCents,  // pass in data as strings
+              headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
+            })
+          .success(function(response, status) {
+            if(!response.error && status == 200) {
+                $location.path('/daily');
+            }
+          });
+      }
     }
 })
 
