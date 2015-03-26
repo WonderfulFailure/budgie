@@ -83,7 +83,7 @@ var app = angular.module('budgie', [
             })
           .success(function(response, status) {
             if(response.code == 0 && status == 200) {
-                $location.path('/daily');
+                $location.path('/welcome');
                 window.Intercom('boot', {
               app_id: "ay3p9jeb",
               // TODO: The current logged in user's full name
