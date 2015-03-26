@@ -65,8 +65,7 @@ var app = angular.module('budgie', [
               // name: $scope.username,
               // TODO: The current logged in user's email address.
               user_id: $scope.username,
-              // TODO: The current logged in user's sign-up date as a Unix timestamp.
-              created_at: Date.now
+              last_request_at: Date.now
             });
         }
     }
@@ -85,6 +84,16 @@ var app = angular.module('budgie', [
           .success(function(response, status) {
             if(response.code == 0 && status == 200) {
                 $location.path('/daily');
+                window.Intercom('boot', {
+              app_id: "ay3p9jeb",
+              // TODO: The current logged in user's full name
+              // name: $scope.username,
+              // TODO: The current logged in user's email address.
+              user_id: $scope.username,
+              // TODO: The current logged in user's sign-up date as a Unix timestamp.
+              created_at: Date.now,
+              last_request_at: Date.now
+            });
             }
             else {
                 $scope.submitError = response.message;
