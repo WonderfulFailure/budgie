@@ -62,9 +62,9 @@ var app = angular.module('budgie', [
             window.Intercom('boot', {
               app_id: "ay3p9jeb",
               // TODO: The current logged in user's full name
-              name: $scope.username,
+              // name: $scope.username,
               // TODO: The current logged in user's email address.
-              email: "john.tooaaao@example.com",
+              user_id: $scope.username,
               // TODO: The current logged in user's sign-up date as a Unix timestamp.
               created_at: Date.now
             });
