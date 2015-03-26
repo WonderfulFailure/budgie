@@ -57,7 +57,7 @@ var app = angular.module('budgie', [
                     $location.path('/daily');
                 }
                 else {
-                    $scope.error = response.message;
+                    $scope.loginError = response.message;
                 }
             });
             window.Intercom('boot', {

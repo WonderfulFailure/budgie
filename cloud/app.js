@@ -43,7 +43,7 @@ app.get('/signup', function(req, res) {
 });
 
 app.post('/signup', function(req, res) {
-    var username = req.body.username;
+    var username = req.body.username.toLowerCase();
     var password = req.body.password;
 
     var user = new Parse.User();
@@ -77,7 +77,7 @@ app.get('/login', function(req, res) {
 });
 
 app.post('/login', function(req, res) {
-    Parse.User.logIn(req.body.username, req.body.password).then(function(user) {
+    Parse.User.logIn(req.body.username.toLowerCase(), req.body.password).then(function(user) {
         res.send({"code": 0, "message": "Successfully logged in"});
     }, function(error) {
         res.send({"code": error.code, "message": error.message});
