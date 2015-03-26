@@ -48,6 +48,7 @@ app.post('/signup', function(req, res) {
 
     var user = new Parse.User();
     user.set('username', username);
+    user.set('email', username);
     user.set('password', password);
     user.set('monthlyBudget', 0);
     user.set('dailyBudget', 0);

@@ -4,12 +4,12 @@
     <div class="col-lg-12">
 
         <div class="alert alert-danger" ng-show="loginError">{{ loginError }}</div>
-        <div class="alert alert-danger" ng-show="login.username.$invalid && !login.username.$pristine">Please enter a username</div>
+        <div class="alert alert-danger" ng-show="login.username.$invalid && !login.username.$pristine">Please enter a valid email</div>
         <div class="alert alert-danger" ng-show="login.password.$invalid && !login.password.$pristine">Please enter a password</div>
 
         <div class="form-group medium-input" ng-class="{ 'has-error' : login.username.$invalid && !login.username.$pristine }">
             <label for="username" class="sr-only">Username</label>
-            <input class="form-control input-lg" type="text" value="" name="username" id="username" placeholder="Username" ng-model="username" required />
+            <input class="form-control input-lg" type="email" value="" name="username" id="username" placeholder="john@appleseed.com" ng-model="username" required email />
         </div>
 
         <div class="form-group medium-input" ng-class="{ 'has-error' : login.password.$invalid && !login.password.$pristine }">

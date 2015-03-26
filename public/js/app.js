@@ -110,8 +110,7 @@ var app = angular.module('budgie', [
 .controller('WelcomeController', function($scope, $routeParams, $http, $location) {
     $scope.processForm = function() {
         var monthlyBudgetInCents;
-        console.log($scope.customBudgetAmount);
-        if($scope.customBudgetAmount != '') {
+        if($scope.customBudgetAmount) {
             monthlyBudgetInCents = $scope.customBudgetAmount * 100;
         }
         else if($scope.spendingHabits == 'frugal') {
