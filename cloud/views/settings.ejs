@@ -9,19 +9,20 @@
 
 <div class="col-md-12">
     <form name="settings" ng-submit="submitSettings()" novalidate>
-        <div class="form-group" ng-class="{ 'has-error' : settings.monthlyBudget.$invalid && !settings.monthlyBudget.$pristine }">
-            <label class="form-label" for="monthlyBudget">Monthly Budget</label>
+        <div class="form-group medium-input" ng-class="{ 'has-error' : settings.monthlyBudget.$invalid && !settings.monthlyBudget.$pristine }">
+            <label class="medium-label form-label" for="monthlyBudget">Monthly Budget</label>
             <input type="text" placeholder="00.00" id="monthlyBudget" name="monthlyBudget" ng-model="monthlyBudget" class="form-control input-lg" required />
         </div>
-        <div class="form-group" ng-class="{ 'has-error' : settings.bucketName.$invalid && !settings.bucketName.$pristine }">
-            <label class="form-label" for="bucketName">Goal Title</label>
+        <div class="form-group medium-input" ng-class="{ 'has-error' : settings.bucketName.$invalid && !settings.bucketName.$pristine }">
+            <label class="medium-label form-label" for="bucketName">Goal Title</label>
             <input type="text" placeholder="Taylor Swift Concert" id="bucketName" name="bucketName" ng-model="bucketName" class="form-control input-lg" required />
         </div>
-        <div class="form-group" ng-class="{ 'has-error' : settings.bucketGoal.$invalid && !settings.bucketGoal.$pristine }">
-            <label class="form-label" for="bucketGoal">Goal Value</label>
+        <div class="form-group medium-input" ng-class="{ 'has-error' : settings.bucketGoal.$invalid && !settings.bucketGoal.$pristine }">
+            <label class="medium-label form-label" for="bucketGoal">Goal Value</label>
             <input type="text" placeholder="00.00" id="bucketGoal" name="bucketGoal" ng-model="bucketGoal" class="form-control input-lg" required />
         </div>
-        <input type="submit" class="btn btn-teal" value="Save Settings" ng-disabled="settings.$invalid" />
-        <a href="#/daily" class="btn btn-default">Bail</a>
+        <input type="submit" class="btn btn-teal btn-lg" value="Update" ng-disabled="settings.$invalid" />
+       <br><br> 
+       <a href="#/daily" class="btn btn-default">NVM</a>
     </form>
 </div>
