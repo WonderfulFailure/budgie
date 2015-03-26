@@ -65,7 +65,7 @@ var app = angular.module('budgie', [
               // TODO: The current logged in user's full name
               // name: $scope.username,
               // TODO: The current logged in user's email address.
-              user_id: $scope.username,
+              email: $scope.username,
               last_request_at: Date.now
             });
         }
@@ -90,7 +90,7 @@ var app = angular.module('budgie', [
               // TODO: The current logged in user's full name
               // name: $scope.username,
               // TODO: The current logged in user's email address.
-                    user_id: $scope.username,
+                    email: $scope.username,
               // TODO: The current logged in user's sign-up date as a Unix timestamp.
                     created_at: Date.now,
                     last_request_at: Date.now
