@@ -30,7 +30,13 @@
     background-color: #ffffff;
     border: 1px solid #3ad3dd;
     display:inline-block;
-    width:100px;
+    min-width:100px;
+}
+
+.btn.btn-teal.active {
+    background-color: #3ad3dd;
+    color: #fff;
+    box-shadow: none;
 }
 
 .total {
@@ -58,13 +64,12 @@
 
 .medium-input input {
     border:none;
-    width: 95%;
     text-align: center;
 }
 
 .medium-label {
     font-weight:300;
-    font-size:22px;    
+    font-size:22px;
 }
 
 .contribution {

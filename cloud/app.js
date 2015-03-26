@@ -223,6 +223,13 @@ app.post('/2/settings', function(req, res) {
     if(currentUser) {
         currentUser.set('monthlyBudget', parseInt(req.body.monthlyBudget));
         currentUser.set('dailyBudget', parseInt(req.body.monthlyBudget / 30));
+
+        if(!currentUser.get('lastDailyBudgetUpdate')) {
+            var today = new Date();
+            today.setHours(0,0,0,0);
+            currentUser.set('lastDailyBudgetUpdate', today);
+            currentUser.set('todaysBudget', parseInt(req.body.todaysBudget));
+        }
         currentUser.save(null, {
             success: function(result) {
                 var Buckets = Parse.Object.extend('Buckets');

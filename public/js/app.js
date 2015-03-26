@@ -37,7 +37,8 @@ var app = angular.module('budgie', [
             controller: 'SignUpController'
         })
         .when('/welcome', {
-            templateUrl: '/welcome'
+            templateUrl: '/welcome',
+            controller: 'WelcomeController'
         })
         .otherwise({redirectTo: '/daily'});
 }])
@@ -75,7 +76,7 @@ var app = angular.module('budgie', [
             })
           .success(function(response, status) {
             if(response.code == 0 && status == 200) {
-                $location.path('/daily');
+                $location.path('/welcome');
             }
             else {
                 $scope.submitError = response.message;
@@ -84,6 +85,40 @@ var app = angular.module('budgie', [
         }
     }
 
+})
+
+.controller('WelcomeController', function($scope, $routeParams, $http, $location) {
+    $scope.processForm = function() {
+        var monthlyBudgetInCents;
+        console.log($scope.customBudgetAmount);
+        if($scope.customBudgetAmount != '') {
+            monthlyBudgetInCents = $scope.customBudgetAmount * 100;
+        }
+        else if($scope.spendingHabits == 'frugal') {
+            monthlyBudgetInCents = 25000;
+        }
+        else if($scope.spendingHabits == 'moderate') {
+            monthlyBudgetInCents = 40000;
+        }
+        else if($scope.spendingHabits == 'lavish') {
+            monthlyBudgetInCents = 50000;
+        }
+
+        $http({
+          method  : 'POST',
+          url     : '/2/settings',
+          data    : 'monthlyBudget=' + monthlyBudgetInCents + "&todaysBudget=" + monthlyBudgetInCents / 30,  // pass in data as strings
+          headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
+        })
+      .success(function(response, status) {
+        if(response.code == 0 && status == 200) {
+            $location.path('/daily');
+        }
+        else {
+            $scope.error = response.message;
+        }
+      });
+    }
 })
 
 .controller('SettingsController', function($scope, $routeParams, $http, $location) {
@@ -170,6 +205,12 @@ var app = angular.module('budgie', [
     $scope.pageClass = 'page-spend';
 
     $scope.amountCents = "";
+
+    setTimeout(function() { $('#spend').trigger('touchstart'); }, 700);
+    //event handler to set the focus()
+    $('#spend').on('touchstart', function () {
+        $(this).focus();   // inside this function the focus works
+    });
     $scope.updateDollars = function(event) {
         var num = event.which || event.keyCode;
         if(num > 47 && num < 58) {
