@@ -49,6 +49,24 @@
     text-align: right;
 }
 
+.medium-input {
+    font-size: 24px;
+    font-weight: 100;
+    padding: 0 10px;
+    margin-bottom: 5px;
+}
+
+.medium-input input {
+    border:none;
+    width: 95%;
+    text-align: center;
+}
+
+.medium-label {
+    font-weight:300;
+    font-size:22px;    
+}
+
 .contribution {
     font-size: 56px;
     font-weight: 100;
