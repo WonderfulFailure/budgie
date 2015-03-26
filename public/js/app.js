@@ -51,15 +51,23 @@ var app = angular.module('budgie', [
               url     : '/login',
               data    : 'username=' + $scope.username + "&password=" + $scope.password,  // pass in data as strings
               headers : { 'Content-Type': 'application/x-www-form-urlencoded' }  // set the headers so angular passing info as form data (not request payload)
-            })
-          .success(function(response, status) {
-            if(response.code == 0 && status == 200) {
-                $location.path('/daily');
-            }
-            else {
-                $scope.error = response.message;
-            }
-          });
+          })
+            .success(function(response, status) {
+                if(response.code == 0 && status == 200) {
+                    $location.path('/daily');
+                }
+                else {
+                    $scope.error = response.message;
+                }
+            });
+            window.Intercom('boot', {
+              app_id: "ay3p9jeb",
+              // TODO: The current logged in user's full name
+              // name: $scope.username,
+              // TODO: The current logged in user's email address.
+              user_id: $scope.username,
+              last_request_at: Date.now
+            });
         }
     }
 })
@@ -76,6 +84,18 @@ var app = angular.module('budgie', [
             })
           .success(function(response, status) {
             if(response.code == 0 && status == 200) {
+
+                window.Intercom('boot', {
+                    app_id: "ay3p9jeb",
+              // TODO: The current logged in user's full name
+              // name: $scope.username,
+              // TODO: The current logged in user's email address.
+                    user_id: $scope.username,
+              // TODO: The current logged in user's sign-up date as a Unix timestamp.
+                    created_at: Date.now,
+                    last_request_at: Date.now
+                });
+
                 $location.path('/welcome');
             }
             else {
@@ -333,5 +353,3 @@ var app = angular.module('budgie', [
 .controller('PremiumController', function($scope, $routeParams) {
     $scope.pageClass = 'page-premium';
 });
-
-
