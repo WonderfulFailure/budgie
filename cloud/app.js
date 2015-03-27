@@ -59,6 +59,8 @@ app.post('/signup', function(req, res) {
         var bucket = new Buckets();
         bucket.set('owner', user);
         bucket.set('progress', 0);
+        bucket.set('goal', 10000);
+        bucket.set('title', 'Gold Bird Cage');
         bucket.save(null, {
             success: function() {
                 res.send({"code": 0, "message": "Successfully signed up"});
@@ -238,8 +240,14 @@ app.post('/2/settings', function(req, res) {
                 query.equalTo('owner', currentUser);
                 query.first({
                   success: function(Bucket) {
-                    Bucket.set('title', req.body.bucketName);
-                    Bucket.set('goal', parseInt(req.body.bucketGoal));
+                    if(req.body.bucketName) {
+                        Bucket.set('title', req.body.bucketName);
+                    }
+
+                    if(req.body.bucketGoal) {
+                        Bucket.set('goal', parseInt(req.body.bucketGoal));
+                    }
+
                     Bucket.save(null, {
                         success: function() {
                             res.send({'code': 0, 'message': 'Settings saved successfully'});
@@ -358,9 +366,7 @@ Parse.Cloud.define("GetUserTransactions", function(request, response) {
     var Transactions = Parse.Object.extend('Transactions');
     var query = new Parse.Query(Transactions);
     var today = new Date();
-    console.log(today);
     today.setHours(0,0,0,0);
-    console.log(today);
     query.equalTo('owner', request.user);
     query.limit(8);
     query.descending("createdAt");
