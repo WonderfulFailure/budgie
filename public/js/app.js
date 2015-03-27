@@ -167,7 +167,7 @@ var app = angular.module('budgie', [
         url     : '/2/details'
     })
     .success(function(data) {
-        if(data.daily && data.today) {
+        if(data.daily != undefined && data.today != undefined) {
             IntercomAuthenticate(data.email);
             ActiveUser(data.email);
 
