@@ -59,7 +59,7 @@ app.post('/signup', function(req, res) {
         var bucket = new Buckets();
         bucket.set('owner', user);
         bucket.set('progress', 0);
-        bucket.set('goal', 10000);
+        bucket.set('goal', 6500);
         bucket.set('title', 'New Video Game');
         bucket.save(null, {
             success: function() {
