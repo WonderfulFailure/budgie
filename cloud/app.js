@@ -60,7 +60,7 @@ app.post('/signup', function(req, res) {
         bucket.set('owner', user);
         bucket.set('progress', 0);
         bucket.set('goal', 10000);
-        bucket.set('title', 'Gold Bird Cage');
+        bucket.set('title', 'New Video Game');
         bucket.save(null, {
             success: function() {
                 res.send({"code": 0, "message": "Successfully signed up"});
