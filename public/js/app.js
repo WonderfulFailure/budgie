@@ -60,14 +60,7 @@ var app = angular.module('budgie', [
                     $scope.loginError = response.message;
                 }
             });
-            window.Intercom('boot', {
-              app_id: "ay3p9jeb",
-              // TODO: The current logged in user's full name
-              // name: $scope.username,
-              // TODO: The current logged in user's email address.
-              email: $scope.username,
-              last_request_at: Date.now
-            });
+
         }
     }
 })
@@ -84,18 +77,6 @@ var app = angular.module('budgie', [
             })
           .success(function(response, status) {
             if(response.code == 0 && status == 200) {
-
-                window.Intercom('boot', {
-                    app_id: "ay3p9jeb",
-              // TODO: The current logged in user's full name
-              // name: $scope.username,
-              // TODO: The current logged in user's email address.
-                    email: $scope.username,
-              // TODO: The current logged in user's sign-up date as a Unix timestamp.
-                    created_at: Date.now,
-                    last_request_at: Date.now
-                });
-
                 $location.path('/welcome');
             }
             else {
@@ -140,7 +121,7 @@ var app = angular.module('budgie', [
     }
 })
 
-.controller('SettingsController', function($scope, $routeParams, $http, $location) {
+.controller('SettingsController', function($scope, $routeParams, $http, $location, IntercomTrackEvent) {
     $scope.pageClass = 'page-settings';
     $scope.error = '';
 
@@ -169,6 +150,7 @@ var app = angular.module('budgie', [
             })
           .success(function(response, status) {
             if(!response.error && status == 200) {
+                IntercomTrackEvent('changed-settings', {'bucket-name': $scope.bucketName});
                 $location.path('/daily');
             }
           });
@@ -176,24 +158,25 @@ var app = angular.module('budgie', [
     }
 })
 
-.controller('DailyController', function($scope, $routeParams, $route, $http, $location) {
+.controller('DailyController', function($scope, $routeParams, $route, $http, $location, IntercomAuthenticate, ActiveUser) {
     $scope.todaysDate = new Date();
     $scope.pageClass = 'page-daily';
 
     $http({
         method  : 'GET',
-        url     : '/2/transactions'
+        url     : '/2/details'
     })
     .success(function(data) {
-        if(!data.error) {
-            $scope.transactions = data;
-            $scope.getTotal = function(){
-                var total = 0;
-                for(var i = 0; i < $scope.transactions.length; i++){
-                    total += $scope.transactions[i].amount / 100;
-                }
-                return total;
-            }
+        if(data.daily && data.today) {
+            IntercomAuthenticate(data.email);
+            ActiveUser(data.email);
+
+            $scope.user = data;
+            var rp1 = radialProgress(document.getElementById('div1'))
+                    .diameter(300)
+                    .value(data.today)
+                    .maxValue(data.daily)
+                    .render();
         }
         else {
             $location.path('/login');
@@ -202,16 +185,18 @@ var app = angular.module('budgie', [
     .then(function() {
         return $http({
             method  : 'GET',
-            url     : '/2/balance'
+            url     : '/2/transactions'
         })
         .success(function(data) {
             if(!data.error) {
-                $scope.user = data;
-                var rp1 = radialProgress(document.getElementById('div1'))
-                        .diameter(300)
-                        .value(data.today)
-                        .maxValue(data.daily)
-                        .render();
+                $scope.transactions = data;
+                $scope.getTotal = function(){
+                    var total = 0;
+                    for(var i = 0; i < $scope.transactions.length; i++){
+                        total += $scope.transactions[i].amount / 100;
+                    }
+                    return total;
+                }
             }
             else {
                 $location.path('/login');
@@ -220,7 +205,7 @@ var app = angular.module('budgie', [
     });
 })
 
-.controller('SpendController', function($scope, $routeParams, $http, $location, $route, $timeout) {
+.controller('SpendController', function($scope, $routeParams, $http, $location, $route, $timeout, ActiveUser, IntercomTrackEvent) {
     $scope.pageClass = 'page-spend';
 
     $scope.amountCents = "";
@@ -254,13 +239,14 @@ var app = angular.module('budgie', [
         })
       .success(function(response, status) {
         if(!response.error && status == 200) {
+            IntercomTrackEvent('spent-money');
             $location.path('/daily');
         }
       });
     }
 })
 
-.controller('BucketsController', function($scope, $routeParams, $http, $location) {
+.controller('BucketsController', function($scope, $routeParams, $http, $location, IntercomTrackEvent) {
     $scope.pageClass = 'page-buckets';
     $scope.amount = "00.00";
 
@@ -274,7 +260,7 @@ var app = angular.module('budgie', [
 
     $http({
         method  : 'GET',
-        url     : '/2/balance'
+        url     : '/2/details'
     })
     .success(function(data) {
         dailyBudget = data.daily;
@@ -343,6 +329,7 @@ var app = angular.module('budgie', [
         })
       .success(function(response, status) {
         if(status == 200) {
+            IntercomTrackEvent('saved-money');
             $location.path('/daily');
         }
       });
@@ -351,4 +338,33 @@ var app = angular.module('budgie', [
 
 .controller('PremiumController', function($scope, $routeParams) {
     $scope.pageClass = 'page-premium';
-});
+})
+
+.factory('ActiveUser', ['$window', function(win) {
+    var activeUser;
+    return function(userEmail) {
+       if(userEmail) {
+        activeUser = userEmail;
+       }
+
+       return activeUser;
+    }
+}])
+
+.factory('IntercomAuthenticate', ['$window', function(win) {
+    return function(userEmail) {
+       Intercom('boot', {
+          app_id: "ay3p9jeb",
+          user_id: userEmail,
+          last_request_at: Date.now
+        });
+    }
+}])
+
+.factory('IntercomTrackEvent', ['$window', 'ActiveUser', function(win, ActiveUser) {
+    return function(eventName, metadata) {
+        if(metadata === undefined) metadata = {};
+        Intercom('trackEvent', eventName, metadata);
+    }
+}]);
+
