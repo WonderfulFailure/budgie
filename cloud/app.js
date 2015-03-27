@@ -184,12 +184,12 @@ app.post('/2/buckets', function(req, res) {
     }
 });
 
-app.get('/2/balance', function(req, res) {
+app.get('/2/details', function(req, res) {
     var currentUser = Parse.User.current();
     if (currentUser) {
         Parse.Cloud.run('CalculateDailyBalance', {}, {
             success: function(result) {
-                res.send({"daily": currentUser.get('dailyBudget'), "today": result.today});
+                res.send({"email": currentUser.get('email'), "daily": currentUser.get('dailyBudget'), "today": result.today});
             },
             error: function(error) {
                 res.send(error);
