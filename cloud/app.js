@@ -1,14 +1,25 @@
 
 // These two lines are required to initialize Express in Cloud Code.
 var express = require('express');
+var moment  = require('cloud/moment');
 var app = express();
 var parseExpressCookieSession = require('parse-express-cookie-session');
 var parseExpressHttpsRedirect = require('parse-express-https-redirect');
+
+//CORS middleware
+var allowCrossDomain = function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+
+    next();
+}
 
 // Global app configuration section
 app.set('views', 'cloud/views');  // Specify the folder to find templates
 app.set('view engine', 'ejs');    // Set the template engine
 app.use(express.bodyParser());    // Middleware for reading request body
+app.use(allowCrossDomain);        // Middleware for CORS
 app.use(express.methodOverride());
 app.use(express.cookieParser('SECRET_SIGNING_KEY'));
 app.use(parseExpressCookieSession({
@@ -80,7 +91,7 @@ app.get('/login', function(req, res) {
 
 app.post('/login', function(req, res) {
     Parse.User.logIn(req.body.username.toLowerCase(), req.body.password).then(function(user) {
-        res.send({"code": 0, "message": "Successfully logged in"});
+        res.send({"code": 0, "message": "Successfully logged in", "token": user.getSessionToken()});
     }, function(error) {
         res.send({"code": error.code, "message": error.message});
     });
@@ -271,91 +282,6 @@ app.post('/2/settings', function(req, res) {
     }
 });
 
-app.post('/spend-save-sms', function(req, res) {
-    var User = Parse.Object.extend('_User');
-    var query = new Parse.Query(User);
-    var userObj;
-    var userTransactions;
-    Parse.Cloud.useMasterKey();
-    query.get('ivWt4BYMS0', {
-        success: function(user) {
-            userObj = user;
-        },
-
-        error: function(object, error) {
-            // Error yo
-            console.log(error);
-        }
-
-    })
-    .then(function() {
-        var amount = parseFloat(req.body.text);
-        var amountInCents = Math.round(amount * 100);
-        var Transaction = Parse.Object.extend("Transactions");
-        var cashTrans = new Transaction();
-        if(!amount) {
-            return Parse.Cloud.httpRequest({
-                          method: "POST",
-                          url: "https://rest.nexmo.com/sms/json",
-                          body: {
-                             api_key: 'b2d131d2',
-                             api_secret: '7b5388b8',
-                             from: req.body.to,
-                             to: req.body.msisdn,
-                             text: "Pweeep! Today's budget is $" + parseFloat(userObj.get('todaysBudget') / 100).toFixed(2) + '!'
-                          },
-                          success: function(httpResponse) {
-                            console.log(httpResponse.text);
-                            res.send(0);
-                          },
-                          error: function(httpResponse) {
-                            console.error('Request failed with response code ' + httpResponse.status);
-                          }
-                        });
-        }
-        return cashTrans.save({
-            label: 'Cash via SMS',
-            amount: amountInCents,
-            owner: userObj
-        }, {
-            success: function(savedTransaction) {
-                userObj.increment('todaysBudget', parseInt(-1 * amountInCents));
-                userObj.save(null, {
-                    success: function(savedUser) {
-                        Parse.Cloud.httpRequest({
-                          method: "POST",
-                          url: "https://rest.nexmo.com/sms/json",
-                          body: {
-                             api_key: 'b2d131d2',
-                             api_secret: '7b5388b8',
-                             from: req.body.to,
-                             to: req.body.msisdn,
-                             text: "Bwraaaak! Cash Transaction for $" + parseFloat(amount).toFixed(2) + " has been recorded.  Your new budget for today is $" + parseFloat(savedUser.get('todaysBudget') / 100).toFixed(2) + '.'
-                          },
-                          success: function(httpResponse) {
-                            console.log(httpResponse.text);
-                            res.send(0);
-                          },
-                          error: function(httpResponse) {
-                            console.error('Request failed with response code ' + httpResponse.status);
-                          }
-                        });
-                    },
-                    error: function(erroredUser, error) {
-                        console.log(erroredUser);
-                        console.log(error);
-                        console.log('Failed to todays budget');
-                    }
-                });
-            },
-            error: function(erroredTransaction, error) {
-                console.log('Failed to send text to recipient');
-                res.send("-1");
-            }
-        })
-    });
-});
-
 /*
     ===============
     Cloud Functions
@@ -365,12 +291,24 @@ app.post('/spend-save-sms', function(req, res) {
 Parse.Cloud.define("GetUserTransactions", function(request, response) {
     var Transactions = Parse.Object.extend('Transactions');
     var query = new Parse.Query(Transactions);
-    var today = new Date();
-    today.setHours(0,0,0,0);
+
+    // 11AM UTC, or 4AM PST
+    var now = moment(new Date()).utc().startOf('day').hours('11');
+
+    // The current time in PST
+    var now_local = moment(new Date()).utc().utcOffset('-0700').startOf('day');
+
+    // Generally this will be zero, but there will be times when UTC gets a day ahead of PST,
+    // so it needs to be accounted for
+    var daysDiff = now.diff(now_local, 'days');
+
+    // The start date for looking up transactions (11AM UTC of the day)
+    var startingFrom = now.utc().subtract(daysDiff, 'days').hours('11');
+
     query.equalTo('owner', request.user);
     query.limit(8);
     query.descending("createdAt");
-    query.greaterThanOrEqualTo("createdAt", today);
+    query.greaterThan("createdAt", startingFrom.toISOString());
     query.find({
       success: function(results) {
         response.success(results);
@@ -470,19 +408,19 @@ Parse.Cloud.define("AddBucketContribution", function(request, response) {
 
 Parse.Cloud.define("CalculateDailyBalance", function(request, response) {
     var currentUser = Parse.User.current();
-    var oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds
-    var lastUpdate = new Date(currentUser.get('lastDailyBudgetUpdate'));
-    lastUpdate.setHours(0,0,0,0);
-    var today = new Date();
-    today.setHours(0,0,0,0);
-    var diffDays = Math.round(Math.abs((lastUpdate.getTime() - today.getTime())/(oneDay)));
+
+    // The day 'starts' at 11AM UTC
+    // Currently calculated from 4AM PDT
+    var lastUpdate = moment(new Date(currentUser.get('lastDailyBudgetUpdate'))).utc().startOf('day').hours('11');
+    var today = moment(new Date()).utc();
+    var diffDays = today.diff(lastUpdate, 'days');
 
     // Only change the balance if it's been more than 24h
     if(diffDays > 0) {
         var dailyBudget = currentUser.get('dailyBudget');
 
         currentUser.increment('todaysBudget', dailyBudget * diffDays);
-        currentUser.set('lastDailyBudgetUpdate', today);
+        currentUser.set('lastDailyBudgetUpdate', today.utc().toDate());
         currentUser.save(null, {
             success: function(result) {
                 response.success({"code": 0, "today": result.get('todaysBudget')});
@@ -495,6 +433,33 @@ Parse.Cloud.define("CalculateDailyBalance", function(request, response) {
     else {
         response.success({"code": 0, "today": currentUser.get('todaysBudget')});
     }
+});
+
+Parse.Cloud.job("DailyBalance", function(request, status) {
+    // Set up to modify user data
+    Parse.Cloud.useMasterKey();
+    var counter = 0;
+    // Query for all users
+    var query = new Parse.Query(Parse.User);
+    query.each(function(user) {
+        // The day 'starts' at 11AM UTC
+        // Currently calculated from 4AM PDT
+        var lastUpdate = moment(new Date(user.get('lastDailyBudgetUpdate'))).utc().startOf('day').hours('11');
+        var today = moment(new Date()).utc();
+        var diffDays = today.diff(lastUpdate, 'days');
+
+        // Only change the balance if it's been more than 24h
+        if(diffDays > 0) {
+            var dailyBudget = user.get('dailyBudget');
+            user.increment('todaysBudget', dailyBudget * diffDays);
+            user.set('lastDailyBudgetUpdate', today.utc().toDate());
+        }
+        return user.save();
+    }).then(function() {
+        status.success("DailyBalance ran successfully.");
+    }, function(error) {
+        status.error("Error while running DailyBalance:" + error);
+    });
 });
 
 

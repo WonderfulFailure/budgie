@@ -2,27 +2,27 @@
 <p class="text-muted">All amounts are in whole dollars. (e.g. $3.14)</p>
 
 <div class="col-lg-12">
-    <div class="alert alert-danger" ng-show="settings.monthlyBudget.$invalid && !settings.monthlyBudget.$pristine">Please enter a Monthly Budget</div>
-    <div class="alert alert-danger" ng-show="settings.bucketName.$invalid && !settings.bucketName.$pristine">Please enter a Goal title</div>
-    <div class="alert alert-danger" ng-show="settings.bucketGoal.$invalid && !settings.bucketGoal.$pristine">Please enter a Goal value</div>
+    <div class="alert alert-danger" ng-show="settings.monthlyBudget.$touched && settings.monthlyBudget.$invalid && !settings.monthlyBudget.$pristine">Please enter a Monthly Budget</div>
+    <div class="alert alert-danger" ng-show="settings.bucketName.$touched && settings.bucketName.$invalid && !settings.bucketName.$pristine">Please enter a Goal title</div>
+    <div class="alert alert-danger" ng-show="settings.bucketGoal.$touched && settings.bucketGoal.$invalid && !settings.bucketGoal.$pristine">Please enter a Goal value</div>
 </div>
 
 <div class="col-md-12">
     <form name="settings" ng-submit="submitSettings()" novalidate>
-        <div class="form-group medium-input" ng-class="{ 'has-error' : settings.monthlyBudget.$invalid && !settings.monthlyBudget.$pristine }">
+        <div class="form-group medium-input" ng-class="{ 'has-error' : settings.monthlyBudget.$touched && settings.monthlyBudget.$invalid && !settings.monthlyBudget.$pristine }">
             <label class="medium-label form-label" for="monthlyBudget">Monthly Budget</label>
             <input type="text" placeholder="00.00" id="monthlyBudget" name="monthlyBudget" ng-model="monthlyBudget" class="form-control input-lg" required />
         </div>
-        <div class="form-group medium-input" ng-class="{ 'has-error' : settings.bucketName.$invalid && !settings.bucketName.$pristine }">
+        <div class="form-group medium-input" ng-class="{ 'has-error' : settings.bucketName.$touched && settings.bucketName.$invalid && !settings.bucketName.$pristine }">
             <label class="medium-label form-label" for="bucketName">Goal Title</label>
             <input type="text" placeholder="Taylor Swift Concert" id="bucketName" name="bucketName" ng-model="bucketName" class="form-control input-lg" required />
         </div>
-        <div class="form-group medium-input" ng-class="{ 'has-error' : settings.bucketGoal.$invalid && !settings.bucketGoal.$pristine }">
+        <div class="form-group medium-input" ng-class="{ 'has-error' : settings.bucketGoal.$touched && settings.bucketGoal.$invalid && !settings.bucketGoal.$pristine }">
             <label class="medium-label form-label" for="bucketGoal">Goal Value</label>
             <input type="text" placeholder="00.00" id="bucketGoal" name="bucketGoal" ng-model="bucketGoal" class="form-control input-lg" required />
         </div>
         <input type="submit" class="btn btn-teal btn-lg" value="Update" ng-disabled="settings.$invalid" />
-       <br><br> 
+       <br><br>
        <a href="#/daily" class="btn btn-default">NVM</a>
     </form>
 </div>
