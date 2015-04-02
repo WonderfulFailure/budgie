@@ -2,5 +2,6 @@
 *.sublime-workspace
 
 config/global.json
+npm-debug.log
 
 .DS_Store
