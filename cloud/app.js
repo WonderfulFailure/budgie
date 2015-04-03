@@ -446,7 +446,7 @@ Parse.Cloud.job("DailyBalance", function(request, status) {
         // Currently calculated from 4AM PDT
         var lastUpdate = moment(new Date(user.get('lastDailyBudgetUpdate'))).utc().startOf('day').hours('11');
         var today = moment(new Date()).utc();
-        var diffDays = today.diff(lastUpdate, 'days');
+        var diffDays = Math.abs(today.diff(lastUpdate, 'days'));
 
         // Only change the balance if it's been more than 24h
         if(diffDays > 0) {
