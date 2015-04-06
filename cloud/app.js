@@ -6,20 +6,10 @@ var app = express();
 var parseExpressCookieSession = require('parse-express-cookie-session');
 var parseExpressHttpsRedirect = require('parse-express-https-redirect');
 
-//CORS middleware
-var allowCrossDomain = function(req, res, next) {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-
-    next();
-}
-
 // Global app configuration section
 app.set('views', 'cloud/views');  // Specify the folder to find templates
 app.set('view engine', 'ejs');    // Set the template engine
 app.use(express.bodyParser());    // Middleware for reading request body
-app.use(allowCrossDomain);        // Middleware for CORS
 app.use(express.methodOverride());
 app.use(express.cookieParser('SECRET_SIGNING_KEY'));
 app.use(parseExpressCookieSession({
@@ -45,6 +35,8 @@ app.use(requireHTTPS);
     Pages
     =====
  */
+
+/*
 app.get('/', function(req, res) {
   res.render('index');
 });
@@ -126,6 +118,7 @@ app.get('/settings', function(req, res) {
 app.get('/welcome', function(req, res) {
   res.render('welcome');
 });
+*/
 
 /*
     =============
@@ -133,6 +126,7 @@ app.get('/welcome', function(req, res) {
     =============
 */
 
+/*
 app.get('/2/transactions', function(req, res) {
     var currentUser = Parse.User.current();
     if (currentUser) {
@@ -240,7 +234,6 @@ app.post('/2/settings', function(req, res) {
 
         if(!currentUser.get('lastDailyBudgetUpdate')) {
             var today = new Date();
-            today.setHours(0,0,0,0);
             currentUser.set('lastDailyBudgetUpdate', today);
             currentUser.set('todaysBudget', parseInt(req.body.todaysBudget));
         }
@@ -281,6 +274,8 @@ app.post('/2/settings', function(req, res) {
         res.send({ "error": "Must be logged in", "code": "-1" });
     }
 });
+
+*/
 
 /*
     ===============
@@ -432,6 +427,66 @@ Parse.Cloud.define("CalculateDailyBalance", function(request, response) {
     }
     else {
         response.success({"code": 0, "today": currentUser.get('todaysBudget')});
+    }
+});
+
+Parse.Cloud.define("UpdateUserSettings", function(request, response) {
+    var currentUser = Parse.User.current();
+    if(currentUser) {
+        if(request.params.monthlyBudget) {
+            currentUser.set('monthlyBudget', parseInt(request.params.monthlyBudget));
+            currentUser.set('dailyBudget', parseInt(request.params.monthlyBudget / 30));
+        }
+
+        if(!currentUser.get('lastDailyBudgetUpdate')) {
+            var today = new Date();
+            currentUser.set('lastDailyBudgetUpdate', today);
+
+            if(request.body.todaysBudget)
+                currentUser.set('todaysBudget', parseInt(request.body.todaysBudget));
+        }
+        currentUser.save(null, {
+            success: function(result) {
+                var Buckets = Parse.Object.extend('Buckets');
+                var query = new Parse.Query(Buckets);
+                query.equalTo('owner', currentUser);
+                query.first({
+                  success: function(Bucket) {
+                    if(!Bucket) {
+                        Bucket = new Buckets();
+                        Bucket.set('owner', currentUser);
+                        Bucket.set('progress', 0);
+                    }
+
+                    if(request.params.bucketName) {
+                        Bucket.set('title', request.params.bucketName);
+                    }
+
+                    if(request.params.bucketGoal) {
+                        Bucket.set('goal', parseInt(request.params.bucketGoal));
+                    }
+
+                    Bucket.save(null, {
+                        success: function(result) {
+                            console.log(result);
+                            response.success({'code': 0, 'message': 'Settings saved successfully'});
+                        },
+                        error: function(error) {
+                            response.error({ "error": error.message, "code": error.code });
+                        }
+                    });
+                  },
+                  error: function(error) {
+                    response.error({ "error": error.message, "code": error.code });
+                  }
+                });
+            },
+            error: function(error) {
+                response.error(error);
+            }
+        });
+    } else {
+        res.send({ "error": "Must be logged in", "code": "-1" });
     }
 });
 
