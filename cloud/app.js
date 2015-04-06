@@ -326,7 +326,8 @@ Parse.Cloud.define("AddTransaction", function(request, response) {
     cashTrans.save({
         label: label,
         amount: amountInCents,
-        owner: request.user
+        owner: request.user,
+        ACL: new Parse.ACL(request.user)
     }, {
         success: function(savedTransaction) {
             response.success({ "code": 0, "message": "Saved transaction successfully"});
@@ -379,6 +380,7 @@ Parse.Cloud.define("AddBucketContribution", function(request, response) {
     query.first({
       success: function(Bucket) {
         Bucket.increment('progress', amountInCents);
+        Bucket.setACL(new Parse.ACL(Parse.User.current()));
         Bucket.save(null, {
             success: function() {
                 Parse.Cloud.run('AddTransaction', {"amount": amount, "label": Bucket.get('title')}, {
@@ -456,6 +458,7 @@ Parse.Cloud.define("UpdateUserSettings", function(request, response) {
                         Bucket = new Buckets();
                         Bucket.set('owner', currentUser);
                         Bucket.set('progress', 0);
+                        Bucket.setACL(new Parse.ACL(currentUser));
                     }
 
                     if(request.params.bucketName) {
@@ -489,6 +492,26 @@ Parse.Cloud.define("UpdateUserSettings", function(request, response) {
         res.send({ "error": "Must be logged in", "code": "-1" });
     }
 });
+/*
+Parse.Cloud.beforeSave("Buckets", function(request, response) {
+    Parse.Cloud.useMasterKey();
+    var user = request.user;
+    request.object.setACL(new Parse.ACL(user));
+    response.success();
+});
+
+Parse.Cloud.beforeSave("Transactions", function(request, response) {
+    Parse.Cloud.useMasterKey();
+    var user = request.user;
+    request.object.setACL(new Parse.ACL(user));
+    response.success();
+});
+*/
+Parse.Cloud.beforeSave(Parse.User, function(request, response) {
+    Parse.Cloud.useMasterKey();
+    request.object.setACL(new Parse.ACL(request.object.get('objectId')));
+    response.success();
+});
 
 Parse.Cloud.job("DailyBalance", function(request, status) {
     // Set up to modify user data
@@ -516,6 +539,41 @@ Parse.Cloud.job("DailyBalance", function(request, status) {
         status.error("Error while running DailyBalance:" + error);
     });
 });
+
+/*
+
+    Warning: Make sure to comment out the afterSave functino for transactions
+    otherwise this will trigger it
+
+Parse.Cloud.job("ACLCleanup", function(request, status) {
+    // Set up to modify user data
+    Parse.Cloud.useMasterKey();
+    var counter = 0;
+    // Query for all users
+    var Transaction = Parse.Object.extend("Transactions");
+    var query = new Parse.Query(Transaction);
+    query.limit(1000);
+    query.find(function(trans) {
+        //console.log(trans.length);
+        for (var i = 0; i < trans.length; i++) {
+            var ownerId = trans[i].get("owner");
+            var newACL = new Parse.ACL();
+            newACL.setReadAccess(ownerId,true);
+            newACL.setWriteAccess(ownerId,true);
+            trans[i].setACL(newACL);
+            trans[i].save(null, {
+                success:function(result) {
+                    console.log('success');
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
+        //return true;
+    });
+});
+*/
 
 
 /* Hey!  Listen! */
