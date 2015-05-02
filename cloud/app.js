@@ -301,7 +301,6 @@ Parse.Cloud.define("GetUserTransactions", function(request, response) {
     var startingFrom = now.utc().subtract(daysDiff, 'days').hours('11');
 
     query.equalTo('owner', request.user);
-    query.limit(8);
     query.descending("createdAt");
     query.greaterThan("createdAt", startingFrom.toISOString());
     query.find({
