@@ -301,8 +301,25 @@ Parse.Cloud.define("GetUserTransactions", function(request, response) {
     var startingFrom = now.utc().subtract(daysDiff, 'days').hours('11');
 
     query.equalTo('owner', request.user);
+    query.limit(8);
     query.descending("createdAt");
     query.greaterThan("createdAt", startingFrom.toISOString());
+    query.find({
+      success: function(results) {
+        response.success(results);
+      },
+      error: function(error) {
+        response.error(error.message);
+      }
+    });
+});
+
+Parse.Cloud.define("GetAllUserTransactions", function(request, response) {
+    var Transactions = Parse.Object.extend('Transactions');
+    var query = new Parse.Query(Transactions);
+
+    query.equalTo('owner', request.user);
+    query.descending("createdAt");
     query.find({
       success: function(results) {
         response.success(results);
