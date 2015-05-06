@@ -359,7 +359,7 @@ Parse.Cloud.define("AddTransaction", function(request, response) {
         ACL: new Parse.ACL(request.user)
     }, {
         success: function(savedTransaction) {
-            response.success({ "code": 0, "message": "Saved transaction successfully"});
+            response.success({ "code": 0, "message": "Saved transaction successfully", "transaction": savedTransaction });
         },
         error: function(erroredTransaction, error) {
             response.error({ "error": error.message, "code": error.code });
