@@ -316,9 +316,20 @@ Parse.Cloud.define("GetUserTransactions", function(request, response) {
 
 Parse.Cloud.define("GetAllUserTransactions", function(request, response) {
     var Transactions = Parse.Object.extend('Transactions');
-    var query = new Parse.Query(Transactions);
 
-    query.equalTo('owner', request.user);
+    var transactionsQuery = new Parse.Query(Transactions);
+    var legacyTransactionsQuery = new Parse.Query(Transactions);
+
+    transactionsQuery.equalTo('owner', request.user);
+    transactionsQuery.equalTo('type', 'spend');
+    transactionsQuery.notEqualTo('deleted', true);
+
+    legacyTransactionsQuery.equalTo('owner', request.user);
+    legacyTransactionsQuery.equalTo('label', 'Cash via app');
+    legacyTransactionsQuery.doesNotExist('type');
+    legacyTransactionsQuery.notEqualTo('deleted', true);
+
+    var query = Parse.Query.or(transactionsQuery, legacyTransactionsQuery);
     query.descending("createdAt");
     query.find({
       success: function(results) {
@@ -337,12 +348,14 @@ Parse.Cloud.define("AddTransaction", function(request, response) {
     var amount = request.params.amount;
     var amountInCents = amount * 100;
     var label = 'Cash via app';
+    var type = request.params.type || 'spend';
     if(request.params.label) label = request.params.label;
 
     cashTrans.save({
         label: label,
         amount: amountInCents,
         owner: request.user,
+        type: type,
         ACL: new Parse.ACL(request.user)
     }, {
         success: function(savedTransaction) {
@@ -354,6 +367,45 @@ Parse.Cloud.define("AddTransaction", function(request, response) {
     });
 });
 
+Parse.Cloud.define("DeleteTransaction", function(request, response) {
+    var transId = request.params.id;
+
+    var Transaction = Parse.Object.extend("Transactions");
+    var query = new Parse.Query(Transaction);
+
+    var currentUser = Parse.User.current();
+
+    if(transId) {
+        query.equalTo('objectId', transId);
+        query.equalTo('owner', currentUser);
+        query.notEqualTo('deleted', true);
+        query.first({
+            success: function(transaction) {
+                if(transaction) {
+                    transaction.set('deleted', true);
+                    transaction.save({}, {
+                        success: function(savedTransaction) {
+                            response.success({ "code": 0, "message": "Removed transaction successfully"});
+                        },
+                        error: function(erroredTransaction, error) {
+                            response.error({ "error": error.message, "code": error.code });
+                        }
+                    });
+                }
+                else {
+                    response.error('invalid transaction id');
+                }
+            },
+            error: function(error) {
+                response.error('invalid transaction id');
+            }
+        });
+    }
+    else {
+        response.error("invalid transaction id");
+    }
+});
+
 Parse.Cloud.afterSave("Transactions", function(request) {
     var currentUser = Parse.User.current();
 
@@ -361,7 +413,12 @@ Parse.Cloud.afterSave("Transactions", function(request) {
     if(request.object) {
         var currentUser = request.user;
         var amountInCents = request.object.get('amount');
-        currentUser.increment('todaysBudget', -amountInCents);
+
+        // Skip deleted transactions
+        var modifier = -1;
+        if(request.object.get('deleted')) modifier = 1;
+
+        currentUser.increment('todaysBudget', modifier * amountInCents);
         currentUser.save(null, {
             success: function(result) {
             },
@@ -399,7 +456,7 @@ Parse.Cloud.define("AddBucketContribution", function(request, response) {
         Bucket.setACL(new Parse.ACL(Parse.User.current()));
         Bucket.save(null, {
             success: function() {
-                Parse.Cloud.run('AddTransaction', {"amount": amount, "label": Bucket.get('title')}, {
+                Parse.Cloud.run('AddTransaction', {"amount": amount, "label": Bucket.get('title'), "type": "save"}, {
                   success: function(result) {
                     response.success({ "message": "Saved bucket contribution successfully" });
                   },
