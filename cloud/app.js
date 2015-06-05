@@ -520,6 +520,11 @@ Parse.Cloud.define("UpdateUserSettings", function(request, response) {
             if(request.body.todaysBudget)
                 currentUser.set('todaysBudget', parseInt(request.body.todaysBudget));
         }
+
+        if(request.params.deviceToken) {
+            currentUser.set('deviceToken', request.params.deviceToken);
+        }
+        
         currentUser.save(null, {
             success: function(result) {
                 var Buckets = Parse.Object.extend('Buckets');
