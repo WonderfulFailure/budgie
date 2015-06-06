@@ -5,6 +5,7 @@ var moment  = require('cloud/moment');
 var app = express();
 var parseExpressCookieSession = require('parse-express-cookie-session');
 var parseExpressHttpsRedirect = require('parse-express-https-redirect');
+var Buffer = require('buffer').Buffer;
 
 // Global app configuration section
 app.set('views', 'cloud/views');  // Specify the folder to find templates
@@ -615,6 +616,153 @@ Parse.Cloud.job("DailyBalance", function(request, status) {
         status.success("DailyBalance ran successfully.");
     }, function(error) {
         status.error("Error while running DailyBalance:" + error);
+    });
+});
+
+Parse.Cloud.job("DailyBalanceReminder", function(request, status) {
+    var currencies = [
+        {
+          'currency': 'usd',
+          'character': '$',
+          'character_unicode': "\u0024",
+          'placeholder': '00.00',
+          'decimalPlaces': 2,
+          'centsToWhole': 100,
+          'icon': 'fa-usd',
+          'format': 'left',
+          'sliderUnit': 1
+        },
+        {
+          'currency': 'gbp',
+          'character': '£',
+          'character_unicode': "\u00A3",
+          'placeholder': '00.00',
+          'decimalPlaces': 2,
+          'centsToWhole': 100,
+          'icon': 'fa-gbp',
+          'format': 'left',
+          'sliderUnit': 1
+        },
+        {
+          'currency': 'euro',
+          'character': '€',
+          'character_unicode': "\u20AC",
+          'placeholder': '00.00',
+          'decimalPlaces': 2,
+          'centsToWhole': 100,
+          'icon': 'fa-euro',
+          'format': 'left',
+          'sliderUnit': 1
+        },
+        {
+          'currency': 'yen',
+          'character': '¥',
+          'character_unicode': "\u00A5",
+          'placeholder': '00.00',
+          'decimalPlaces': 2,
+          'centsToWhole': 100,
+          'icon': 'fa-yen',
+          'format': 'left',
+          'sliderUnit': 1
+        },
+        {
+          'currency': 'lira',
+          'character': '₺',
+          'character_unicode': "\u20BA",
+          'placeholder': '00.00',
+          'decimalPlaces': 2,
+          'centsToWhole': 100,
+          'icon': 'fa-try',
+          'format': 'left',
+          'sliderUnit': 1
+        }
+    ];
+
+    function getCurrency(key) {
+        for(var i in currencies) {
+          var currency = currencies[i];
+          if(currency.currency == key) {
+            return currency;
+          }
+        }
+
+        return currencies[0];
+    }
+
+    function toWhole(amountInCents, currency) {
+        if(typeof currency === 'undefined') currency = currencies[0];
+        var divisor = currency.centsToWhole;
+        return parseFloat(amountInCents / divisor).toFixed(currency.decimalPlaces);
+    }
+
+    function toDisplay(amountInCents, currency) {
+        amountInCents = Math.round(amountInCents);
+        currentCurrency = currency;
+        if(currentCurrency) {
+          var negativeSymbol = "";
+          if(amountInCents < 0) {
+            negativeSymbol = "-";
+            amountInCents = Math.abs(amountInCents);
+          }
+          return negativeSymbol + currentCurrency.character_unicode + toWhole(amountInCents, currentCurrency);
+        }
+    }
+    
+    // Set up to modify user data
+    Parse.Cloud.useMasterKey();
+    var counter = 0;
+    // Query for all users
+    var query = new Parse.Query(Parse.User);
+    query.each(function(user) {
+        var deviceToken = user.get('deviceToken');
+
+        if(deviceToken) {
+            var currency = getCurrency(user.get('currency'));
+            var tBWhole = toDisplay(user.get('todaysBudget'), currency);
+
+            var msg = "Bwraaak!  Your allowance today is " + tBWhole + "!";
+            var noteBody = {
+              "tokens":[
+                deviceToken
+              ],
+              "notification":{
+                "alert": msg,
+                "ios":{
+                  "contentAvailable": true,
+                },
+                "android":{
+                  "delayWhileIdle":true,
+                }
+              }
+            }
+
+            var buf = new Buffer('07e9ea0648e6a6f507e91a2914237509230499c70c4eaf9f', 'utf8');
+            var base64 = buf.toString('base64');
+
+            Parse.Cloud.httpRequest({
+                url: 'https://push.ionic.io/api/v1/push',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8',
+                    'X-Ionic-Application-Id': 'b306568f',
+                    'Authorization': 'Basic ' + base64 + ':'
+                },
+                body: JSON.stringify(noteBody),
+                success: function(httpResponse) {
+                    console.log('Successfully sent push notification');
+                },
+                error: function(httpResponseError) {
+                    console.log('Error sending push');
+                    console.log(httpResponseError);
+                }
+            });
+        }
+
+        return true;
+    }).then(function() {
+        status.success("DailyBalanceReminder ran successfully.");
+    }, function(error) {
+        status.error("Error while running DailyBalanceReminder:" + error);
     });
 });
 
