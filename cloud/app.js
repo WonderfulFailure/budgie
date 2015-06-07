@@ -734,7 +734,8 @@ Parse.Cloud.job("DailyBalanceReminder", function(request, status) {
               "notification":{
                 "alert": msg,
                 "ios":{
-                  "contentAvailable": true,
+                    "sound": "www/sounds/spend.wav"
+                    "contentAvailable": true,
                 },
                 "android":{
                   "delayWhileIdle":true,
