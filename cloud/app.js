@@ -525,6 +525,12 @@ Parse.Cloud.define("UpdateUserSettings", function(request, response) {
         if(request.params.deviceToken) {
             currentUser.set('deviceToken', request.params.deviceToken);
         }
+
+        if(request.params.allowanceReminders && request.params.allowanceReminders == "false") {
+            currentUser.set('allowanceReminders', false);
+        } else {
+            currentUser.set('allowanceReminders', true);
+        }
         
         currentUser.save(null, {
             success: function(result) {
@@ -716,7 +722,7 @@ Parse.Cloud.job("DailyBalanceReminder", function(request, status) {
     query.each(function(user) {
         var deviceToken = user.get('deviceToken');
 
-        if(deviceToken) {
+        if(deviceToken && user.get('allowanceReminders') !== false) {
             var currency = getCurrency(user.get('currency'));
             var tBWhole = toDisplay(user.get('todaysBudget'), currency);
 
