@@ -531,6 +531,10 @@ Parse.Cloud.define("UpdateUserSettings", function(request, response) {
         } else {
             currentUser.set('allowanceReminders', true);
         }
+
+        if(request.params.utcOffset && !currentUser.get('utcOffset')) {
+            currentUser.set('utcOffset', request.params.utcOffset);
+        }
         
         currentUser.save(null, {
             success: function(result) {
@@ -622,6 +626,37 @@ Parse.Cloud.job("DailyBalance", function(request, status) {
         status.success("DailyBalance ran successfully.");
     }, function(error) {
         status.error("Error while running DailyBalance:" + error);
+    });
+});
+
+Parse.Cloud.job("DailyBalanceUsersTime", function(request, status) {
+    // Set up to modify user data
+    Parse.Cloud.useMasterKey();
+    var counter = 0;
+    // Query for all users
+    var query = new Parse.Query(Parse.User);
+    query.each(function(user) {
+        
+        if(user.get('utcOffset')) {
+            var utcOffset = parseInt(user.get('utcOffset'));
+            var lastUpdate = moment(new Date(user.get('lastDailyBudgetUpdate'))).utc().utcOffset(utcOffset).startOf('day');
+            var today = moment(new Date()).utc().utcOffset(utcOffset);
+            var diffDays = Math.abs(today.diff(lastUpdate, 'days'));
+
+            if(diffDays > 0) {
+                var dailyBudget = user.get('dailyBudget');
+                user.increment('todaysBudget', dailyBudget * diffDays);
+                user.set('lastDailyBudgetUpdate', today.utc().toDate());
+            }
+            return user.save();
+        }
+        else {
+            return false;
+        }
+    }).then(function() {
+        status.success("DailyBalanceUsersTime ran successfully.");
+    }, function(error) {
+        status.error("Error while running DailyBalanceUsersTime:" + error);
     });
 });
 
