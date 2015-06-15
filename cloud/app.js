@@ -535,6 +535,15 @@ Parse.Cloud.define("UpdateUserSettings", function(request, response) {
         if(request.params.utcOffset && !currentUser.get('utcOffset')) {
             currentUser.set('utcOffset', request.params.utcOffset);
         }
+
+        if(!currentUser.get('lastReminder')) {
+            var today = new Date();
+            currentUser.set('lastReminder', today);
+        }
+
+        if(request.params.reminderTime) {
+            currentUser.set('reminderTime', request.params.reminderTime);
+        }
         
         currentUser.save(null, {
             success: function(result) {
@@ -648,10 +657,12 @@ Parse.Cloud.job("DailyBalanceUsersTime", function(request, status) {
                 user.increment('todaysBudget', dailyBudget * diffDays);
                 user.set('lastDailyBudgetUpdate', today.utc().toDate());
 
-                Parse.Cloud.run('SendBalanceReminder', { userId: user.id }, {
-                    success: function(result) {},
-                    error: function(error) {}
-                });
+                if(!user.get('reminderTime')) {
+                    Parse.Cloud.run('SendBalanceReminder', { userId: user.id }, {
+                        success: function(result) {},
+                        error: function(error) {}
+                    });
+                }
 
                 return user.save();
             }
@@ -968,6 +979,39 @@ Parse.Cloud.define("SendBalanceReminder", function(request, response) {
         error: function(error) {
             response.error(error);
         }
+    });
+});
+
+Parse.Cloud.job("BalanceReminderUserTime", function(request, status) {
+
+    // Set up to modify user data
+    Parse.Cloud.useMasterKey();
+    var counter = 0;
+    // Query for all users
+    var query = new Parse.Query(Parse.User);
+    query.each(function(user) {
+        var deviceToken = user.get('deviceToken');
+        var reminderTime = user.get('reminderTime');
+
+        if(deviceToken && reminderTime && user.get('allowanceReminders') !== false) {
+            var utcOffset = parseInt(user.get('utcOffset'));
+            var lastUpdate = moment(new Date(user.get('lastReminder'))).utc().utcOffset(utcOffset).startOf('day').hours(reminderTime);
+            var today = moment(new Date()).utc().utcOffset(utcOffset);
+            var diffDays = Math.abs(today.diff(lastUpdate, 'days'));
+
+            if(diffDays > 0) {
+                Parse.Cloud.run('SendBalanceReminder', { userId: user.id }, {
+                    success: function(result) {},
+                    error: function(error) {}
+                });
+            }
+        }
+
+        return true;
+    }).then(function() {
+        status.success("BalanceReminderUserTime ran successfully.");
+    }, function(error) {
+        status.error("Error while running BalanceReminderUserTime:" + error);
     });
 });
 
