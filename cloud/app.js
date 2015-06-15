@@ -1004,6 +1004,9 @@ Parse.Cloud.job("BalanceReminderUserTime", function(request, status) {
                     success: function(result) {},
                     error: function(error) {}
                 });
+
+                user.set('lastReminder', today.utc().toDate());
+                user.save();
             }
         }
 
