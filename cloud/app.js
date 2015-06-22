@@ -664,19 +664,35 @@ Parse.Cloud.job("DailyBalanceUsersTime", function(request, status) {
                     });
                 }
 
-                return user.save();
-            }
-            else {
-                return false;
+                user.save();
             }
         }
-        else {
-            return false;
+
+        var deviceToken = user.get('deviceToken');
+        var reminderTime = user.get('reminderTime');
+
+        if(deviceToken && reminderTime && user.get('allowanceReminders') !== false) {
+            var utcOffset = parseInt(user.get('utcOffset'));
+            var lastUpdate = moment(new Date(user.get('lastReminder'))).utc().utcOffset(utcOffset).startOf('day').hours(reminderTime);
+            var today = moment(new Date()).utc().utcOffset(utcOffset);
+            var diffDays = Math.abs(today.diff(lastUpdate, 'days'));
+
+            if(diffDays > 0) {
+                Parse.Cloud.run('SendBalanceReminder', { userId: user.id }, {
+                    success: function(result) {},
+                    error: function(error) {}
+                });
+
+                user.set('lastReminder', today.utc().toDate());
+                user.save();
+            }
         }
+        
     }).then(function() {
         status.success("DailyBalanceUsersTime ran successfully.");
     }, function(error) {
         status.error("Error while running DailyBalanceUsersTime:" + error);
+        console.log(error);
     });
 });
 
@@ -777,7 +793,7 @@ Parse.Cloud.job("DailyBalanceReminder", function(request, status) {
     query.each(function(user) {
         var deviceToken = user.get('deviceToken');
 
-        if(deviceToken && user.get('allowanceReminders') !== false) {
+        if(deviceToken && user.get('allowanceReminders') !== false && !user.get('utcOffset')) {
             var currency = getCurrency(user.get('currency'));
             var tBWhole = toDisplay(user.get('todaysBudget'), currency);
 
